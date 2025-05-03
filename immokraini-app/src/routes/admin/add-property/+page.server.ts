@@ -1,64 +1,106 @@
 // src/routes/admin/add-property/+page.server.ts
 import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import type { Actions } from './$types';
 import prisma from '$lib/server/prisma';
-
-// Optional: Load agents for dropdown later
-// export const load: PageServerLoad = async () => {
-//     const agents = await prisma.agent.findMany({ select: { id: true, name: true }});
-//     return { agents };
-// };
+import { uploadImageToCloudinary } from '$lib/server/cloudinary'; // <<< Import helper
+import { Buffer } from 'buffer'; // Needed for buffer operations
 
 export const actions: Actions = {
     default: async ({ request }) => {
         const formData = await request.formData();
 
-        // --- Extract and Validate Data ---
+        // --- Extract Text/Number Data ---
         const data = {
             title: formData.get('title') as string,
             slug: formData.get('slug') as string,
             address: formData.get('address') as string,
-            price: parseInt(formData.get('price') as string || '0', 10),
-            beds: parseInt(formData.get('beds') as string || '', 10) || null, // Handle empty string
-            baths: parseInt(formData.get('baths') as string || '', 10) || null,
-            area: parseInt(formData.get('area') as string || '', 10) || null,
-            propertyType: formData.get('propertyType') as string || null,
-            yearBuilt: parseInt(formData.get('yearBuilt') as string || '', 10) || null,
-            description: formData.get('description') as string || null,
-            features: formData.get('features') as string || null, // Will be stringified later
-            imageUrl: formData.get('imageUrl') as string || null,
-            galleryImages: formData.get('galleryImages') as string || null, // Will be stringified later
+            price: 0, // Initialize with default value
+            beds: null as number | null,
+            baths: null as number | null,
+            area: null as number | null,
+            yearBuilt: null as number | null,
+            propertyType: null as string | null,
+            description: null as string | null,
+            // ... other text/number fields ...
+            features: formData.get('features') as string || null, 
             videoUrl: formData.get('videoUrl') as string || null,
             latitude: parseFloat(formData.get('latitude') as string || '') || null,
             longitude: parseFloat(formData.get('longitude') as string || '') || null,
             agentId: formData.get('agentId') as string || null,
+            // --- Fields to be populated from uploads ---
+            imageUrl: null as string | null, 
+            galleryImages: null as string | null, // Will store JSON string of URLs
         };
+        // Parse numbers safely
+        data.price = parseInt(formData.get('price') as string || '0', 10);
+        data.beds = parseInt(formData.get('beds') as string || '', 10) || null;
+        data.baths = parseInt(formData.get('baths') as string || '', 10) || null;
+        data.area = parseInt(formData.get('area') as string || '', 10) || null;
+        data.yearBuilt = parseInt(formData.get('yearBuilt') as string || '', 10) || null;
+        data.propertyType = formData.get('propertyType') as string || null;
+        data.description = formData.get('description') as string || null;
 
-        // Basic required field validation
-        if (!data.title || !data.slug || !data.address || !data.price) {
-            return fail(400, { error: 'Missing required fields (Title, Slug, Address, Price).', data });
-        }
-        // Slug format validation
-        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.slug)) {
-             return fail(400, { error: 'Slug must contain only lowercase letters, numbers, and hyphens.', data });
-        }
-        // Check if slug already exists
+
+        // --- Basic Validation ---
+        if (!data.title || !data.slug || !data.address || !data.price) { return fail(400, { error: 'Missing required fields.', data }); }
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.slug)) { return fail(400, { error: 'Invalid slug format.', data }); }
         const existing = await prisma.property.findUnique({ where: { slug: data.slug }});
-        if (existing) {
-             return fail(400, { error: `Slug "${data.slug}" is already taken. Please choose another.`, data });
+        if (existing) { return fail(400, { error: `Slug "${data.slug}" is already taken.`, data }); }
+        // --- End Validation ---
+
+
+        // --- Process File Uploads ---
+        const mainImageFile = formData.get('imageUrl') as File | null;
+        const galleryImageFiles = formData.getAll('galleryImages') as File[]; // Use getAll for multiple
+
+        let mainImageUrl: string | null = null;
+        const galleryUrls: string[] = [];
+
+        try {
+            // Upload Main Image
+            if (mainImageFile && mainImageFile.size > 0) {
+                console.log(`Uploading main image: ${mainImageFile.name}`);
+                const fileBuffer = Buffer.from(await mainImageFile.arrayBuffer());
+                mainImageUrl = await uploadImageToCloudinary(fileBuffer);
+                if (!mainImageUrl) throw new Error('Main image upload failed.');
+                data.imageUrl = mainImageUrl; // Update data object
+                console.log(`Main image uploaded: ${mainImageUrl}`);
+            }
+
+            // Upload Gallery Images
+            if (galleryImageFiles && galleryImageFiles.length > 0) {
+                 console.log(`Uploading ${galleryImageFiles.length} gallery images...`);
+                 for (const file of galleryImageFiles) {
+                     if (file && file.size > 0) {
+                         console.log(`Uploading gallery image: ${file.name}`);
+                         const fileBuffer = Buffer.from(await file.arrayBuffer());
+                         const url = await uploadImageToCloudinary(fileBuffer);
+                         if (url) {
+                             galleryUrls.push(url);
+                             console.log(`Gallery image uploaded: ${url}`);
+                         } else {
+                             console.warn(`Skipping failed gallery upload: ${file.name}`);
+                             // Decide if you want to fail the whole request or just skip the image
+                             // throw new Error(`Gallery image upload failed for ${file.name}`); 
+                         }
+                     }
+                 }
+                 if (galleryUrls.length > 0) {
+                     data.galleryImages = JSON.stringify(galleryUrls); // Store as JSON string
+                 }
+            }
+        } catch (uploadError: any) {
+             console.error("Error during file upload:", uploadError);
+             return fail(500, { error: `File upload failed: ${uploadError.message}`, data });
         }
-        // Add more validation as needed...
+        // --- End File Uploads ---
 
-        // --- Prepare Data for Prisma ---
-        // Split comma-separated strings and stringify arrays
+
+        // --- Prepare Final Data for Prisma ---
         const featuresArray = data.features?.split(',').map(f => f.trim()).filter(f => f) ?? [];
-        const galleryArray = data.galleryImages?.split(',').map(f => f.trim()).filter(f => f) ?? [];
-
         const prismaData = {
-            ...data,
+            ...data, // Includes imageUrl and galleryImages URLs now
             features: featuresArray.length > 0 ? JSON.stringify(featuresArray) : null,
-            galleryImages: galleryArray.length > 0 ? JSON.stringify(galleryArray) : null,
-            // Ensure agentId is null if empty string was submitted
             agentId: data.agentId === '' ? null : data.agentId, 
         };
 
@@ -69,15 +111,16 @@ export const actions: Actions = {
             });
             console.log('Created new property:', newProperty.id, newProperty.title);
             
-            // Option 1: Redirect to the new property's page
-            // redirect(303, `/properties/${newProperty.slug}`); 
-            
-            // Option 2: Return success message to the form
+            // Return success message
             return { success: true, addedTitle: newProperty.title };
 
-        } catch (err) {
-            console.error("Error creating property:", err);
-            return fail(500, { error: 'Failed to create property in database.', data });
+        } catch (dbError) {
+            console.error("Error creating property in DB:", dbError);
+            // Attempt to delete uploaded images if DB save fails? (More complex cleanup)
+            return fail(500, { error: 'Failed to save property to database after upload.', data });
         }
     }
 };
+
+// Optional: Load function remains commented out unless needed for agent dropdown
+// export const load: PageServerLoad = async () => { ... };

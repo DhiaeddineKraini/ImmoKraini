@@ -11,9 +11,12 @@
 	// UI Icons for sections
 	import { Award, Users, Send, Phone, Mail, MapPin } from 'lucide-svelte';
 
+	interface AgentInfo { id: string; name: string; email: string; phone: string | null; imageUrl: string | null; title?: string; }
+
 	// Define the expected structure of PageData
 	type ExtendedPageData = PageData & {
 		featuredProperties?: Array<any>;
+		agents?: AgentInfo[];
 		error?: string | null;
 	};
 
@@ -22,6 +25,8 @@
 	// Use reactive declarations to get data from the prop, provide fallbacks
 	$: featuredProperties = data?.featuredProperties || [];
 	$: featuredLoadError = data?.error || null; // Capture potential loading errors
+	$: agents = data?.agents || []; // <<< ADDED reactive declaration for agents
+	$: pageLoadError = data?.error || null; 
 
 	/* ───────── Search-form state ───────── */
 	let searchLocation: string = '';
@@ -29,15 +34,6 @@
 	let searchMinPrice: string = '';
 	let searchMaxPrice: string = '';
 	/* ───────── End Search-form state ───────── */
-
-	/* ───────── Placeholder Agent Data ───────── */
-	// Updated team member data as per the new script block
-	const teamMembers = [
-		{ id: 1, name: 'Aisha Ben Ali', title: 'Lead Agent / Founder', imageUrl: '/agent-aisha.jpg', link: '/agent/aisha-ben-ali' },
-		{ id: 2, name: 'Karim Trabelsi', title: 'Sales Specialist', imageUrl: '/agent-karim.jpg', link: '/agent/karim-trabelsi' },
-		{ id: 3, name: 'Fatma Cherif', title: 'Rental Manager', imageUrl: '/agent-fatma.jpg', link: '/agent/fatma-cherif' },
-	];
-	/* ───────── End Placeholder Data ───────── */
 
 
 	/* ───────── Form-submit handler ───────── */
@@ -267,27 +263,34 @@
 	<section id="meet-the-team" class="py-16 px-4 bg-gray-50"> 
 		<div class="container mx-auto text-center">
 			<h2 class="text-3xl font-bold mb-12 text-muted-blue">Meet Our Team</h2>
-			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-				{#each teamMembers as member (member.id)} 
-					<div class="team-card bg-white p-6 rounded-lg shadow text-center transition-transform duration-300 hover:scale-105">
-						<img
-							src={member.imageUrl}
-							alt="Photo of {member.name}"
-							class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-sky-blue"
-							loading="lazy"
-							width="96" height="96"
-						/>
-						<h3 class="text-lg font-semibold text-gray-800">{member.name}</h3>
-						<p class="text-sm text-brand-blue mb-3">{member.title}</p>
-						<a href={member.link} class="text-sm text-muted-blue hover:underline">View Profile</a>
-					</div>
-				{/each}
-			</div>
-			<div class="text-center mt-12">
-				<a href="/about#team" class="inline-block bg-muted-blue text-white font-semibold py-2 px-6 rounded-md shadow hover:bg-opacity-90 transition duration-300 ease-in-out">
-					See Full Team
-				</a>
-			</div>
+
+            {#if pageLoadError}
+                 <p class="text-center text-red-600">Could not load team information.</p>
+            {:else if agents.length > 0} 
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                    {#each agents as member (member.id)} 
+                        <div class="team-card bg-white p-6 rounded-lg shadow text-center transition-transform duration-300 hover:scale-105 flex flex-col"> 
+                            <img
+                                src={member.imageUrl || '/default-avatar.png'} 
+                                alt="Photo of {member.name}"
+                                class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-sky-blue flex-shrink-0"
+                                loading="lazy" width="96" height="96"
+                            />
+                            <h3 class="text-lg font-semibold text-gray-800">{member.name}</h3>
+                            <!-- Add title back if you fetch it -->
+                            <!-- <p class="text-sm text-brand-blue mb-3">{member.title || 'Real Estate Agent'}</p> -->
+                            
+                            <div class="mt-auto pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-600"> 
+                                {#if member.phone} <a href={`tel:${member.phone}`} class="flex items-center justify-center group hover:text-brand-blue"> <Phone class="w-3 h-3 mr-1.5 text-brand-orange group-hover:scale-110 transition-transform" /> <span>{member.phone}</span> </a> {/if}
+                                {#if member.email} <a href={`mailto:${member.email}`} class="flex items-center justify-center group hover:text-brand-blue"> <Mail class="w-3 h-3 mr-1.5 text-brand-orange group-hover:scale-110 transition-transform" /> <span>{member.email}</span> </a> {/if}
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            {:else}
+                 <p class="text-center text-gray-600">Our team information is currently unavailable.</p>
+            {/if}
+			<!-- Removed See Full Team Button -->
 		</div>
 	</section>
 	<!-- ================== End Meet the Team Section ================== -->
