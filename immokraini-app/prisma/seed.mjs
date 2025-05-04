@@ -15,11 +15,11 @@ const propertiesData = [
         address: 'Route Touristique, Houmt Souk, Djerba', 
         price: 950000, beds: 4, baths: 3, area: 280, 
         description: 'Stunning luxury villa with sea views, located near the heart of Houmt Souk. Features modern amenities, spacious living areas, and a beautiful private pool.', 
-        features: ['Private Pool', 'Sea View', 'Modern Kitchen', 'Garden', 'Garage', 'Air Conditioning'], // <<< ACTUAL features array
+        features: ['Private Pool', 'Sea View', 'Modern Kitchen', 'Garden', 'Garage', 'Air Conditioning'], // <<< Pass array directly
         propertyType: 'Villa', yearBuilt: 2019, 
         agentName: 'Aisha Ben Ali', 
         location: { lat: 33.8718, lon: 10.8500 }, 
-        isFeatured: true // <<< Set boolean
+        isFeatured: true 
     },
     { 
         id_placeholder: 2, 
@@ -31,11 +31,11 @@ const propertiesData = [
         address: 'Near Midoun Center, Djerba', 
         price: 480000, beds: 3, baths: 2, area: 150, 
         description: 'Traditional Djerbian Menzel beautifully restored, located in a quiet area near Midoun. Enjoy the authentic architecture with a central courtyard and comfortable living spaces.', 
-        features: ['Traditional Architecture', 'Courtyard', 'Quiet Area', 'Near Market', 'Air Conditioning'], // <<< ACTUAL features array
+        features: ['Traditional Architecture', 'Courtyard', 'Quiet Area', 'Near Market', 'Air Conditioning'], // <<< Pass array directly
         propertyType: 'Menzel (House)', yearBuilt: 1985, 
         agentName: 'Karim Trabelsi', 
         location: { lat: 33.8060, lon: 10.9600 }, 
-        isFeatured: false // <<< Set boolean
+        isFeatured: false 
     },
     { 
         id_placeholder: 3, 
@@ -47,11 +47,11 @@ const propertiesData = [
         address: 'Coastal Road, Aghir, Djerba', 
         price: 350000, beds: 2, baths: 1, area: 90,
         description: 'Modern apartment with direct access to the beach in Aghir. Perfect holiday home or rental investment with stunning sea views from the balcony.',
-        features: ['Direct Beach Access', 'Sea View Balcony', 'Shared Pool', 'Furnished', 'Rental Potential'], // <<< ACTUAL features array
+        features: ['Direct Beach Access', 'Sea View Balcony', 'Shared Pool', 'Furnished', 'Rental Potential'], // <<< Pass array directly
         propertyType: 'Apartment', yearBuilt: 2015,
         agentName: 'Aisha Ben Ali', 
         location: { lat: 33.7480, lon: 11.0350 },
-        isFeatured: true // <<< Set boolean
+        isFeatured: true 
     },
     { 
         id_placeholder: 4, 
@@ -63,11 +63,11 @@ const propertiesData = [
         address: 'Rural Route, near Guellala, Djerba', 
         price: 180000, beds: null, baths: null, area: 10000, 
         description: 'Large plot of agricultural land featuring mature olive trees. Located in a peaceful rural area near the pottery village of Guellala. Ideal for farming or building a secluded retreat.',
-        features: ['Olive Trees', 'Agricultural Land', 'Quiet Location', 'Near Guellala'], // <<< ACTUAL features array
+        features: ['Olive Trees', 'Agricultural Land', 'Quiet Location', 'Near Guellala'], // <<< Pass array directly
         propertyType: 'Land', yearBuilt: null,
         agentName: 'Karim Trabelsi', 
         location: { lat: 33.7300, lon: 10.7500 },
-        isFeatured: false // <<< Set boolean
+        isFeatured: false 
     },
 ];
 const agentsData = [
@@ -80,7 +80,8 @@ async function main() {
 
   // Clear existing data
   console.log('Deleting existing data...');
-  await prisma.property.deleteMany({});
+  // Important: Delete properties first due to relation constraint if agent delete cascades
+  await prisma.property.deleteMany({}); 
   await prisma.agent.deleteMany({});
   console.log('Existing data deleted.');
 
@@ -110,16 +111,18 @@ async function main() {
         propertyType: propData.propertyType,
         yearBuilt: propData.yearBuilt,
         imageUrl: propData.imageUrl,
-        galleryImages: propData.galleryImages && propData.galleryImages.length > 0 ? JSON.stringify(propData.galleryImages) : null, // Stringify gallery array
-        features: propData.features && propData.features.length > 0 ? JSON.stringify(propData.features) : null, // Stringify features array
+        // --- Pass arrays directly for PostgreSQL ---
+        galleryImages: propData.galleryImages ?? [], 
+        features: propData.features ?? [],       
+        // --- End Pass arrays ---
         videoUrl: propData.videoUrl,
         latitude: propData.location?.lat,
         longitude: propData.location?.lon,
         agentId: agent?.id, 
-        isFeatured: propData.isFeatured ?? false // <<< CORRECTLY map boolean
+        isFeatured: propData.isFeatured ?? false 
       },
     });
-    console.log(`Created property: ${property.title}, Featured: ${property.isFeatured}`); // Log correct field
+    console.log(`Created property: ${property.title}, Featured: ${property.isFeatured}`); 
   }
 
   console.log(`Seeding finished.`);

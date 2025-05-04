@@ -1,56 +1,50 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
+  // Add preview feature for edge compatibility if needed by your Prisma version
+  // previewFeatures = ["driverAdapters"] 
 }
 
 datasource db {
-  provider = "sqlite" // Using SQLite
-  url      = env("DATABASE_URL") // Reads from .env file
+  provider = "postgresql" // <<< CHANGED to postgresql
+  url      = env("DATABASE_URL") 
+  // Optional: Add directUrl for migration tools if needed, often same as url for Neon
+  // directUrl = env("DIRECT_URL") 
 }
 
-// Agent Model
 model Agent {
-  id    String @id @default(cuid()) // Unique ID (string, cuid is good)
-  name  String
-  email String @unique // Agent email must be unique
-  phone String? // Optional phone number
-  imageUrl String? // Optional image URL
-
-  properties Property[] // Relation: An agent can have many properties
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String     @id @default(cuid()) 
+  name      String
+  email     String     @unique 
+  phone     String?    
+  imageUrl  String?    
+  properties Property[] 
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
-// Property Model (Corrected for SQLite)
-    model Property {
-      id            String   @id @default(cuid())
-      slug          String   @unique 
-      title         String
-      address       String
-      price         Int      
-      beds          Int?     
-      baths         Int?     
-      area          Int?     
-      description   String?  
-      propertyType  String?  
-      yearBuilt     Int?     
-      imageUrl      String?  
-      galleryImages String?  
-      videoUrl      String?  
-      features      String?  
-
-      latitude      Float?   
-      longitude     Float?
-
-      agentId       String?  
-      agent         Agent?   @relation(fields: [agentId], references: [id]) 
-
-      isFeatured    Boolean  @default(false) 
-
-      createdAt     DateTime @default(now())
-      updatedAt     DateTime @updatedAt
-
-      @@index([agentId]) 
-      @@index([isFeatured])
-    }
+model Property {
+  id            String   @id @default(cuid())
+  slug          String   @unique 
+  title         String
+  address       String
+  price         Int      
+  beds          Int?     
+  baths         Int?     
+  area          Int?     
+  description   String?  // @db.Text is fine for Postgres
+  propertyType  String?  
+  yearBuilt     Int?     
+  imageUrl      String?  
+  galleryImages String[] // <<< CHANGED BACK to String[] (Postgres supports arrays)
+  videoUrl      String?  
+  features      String[] // <<< CHANGED BACK to String[]
+  latitude      Float?   
+  longitude     Float?
+  agentId       String?  
+  agent         Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull) // Optional: SetNull on delete
+  isFeatured    Boolean  @default(false) 
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([agentId]) 
+  @@index([isFeatured]) 
+}
