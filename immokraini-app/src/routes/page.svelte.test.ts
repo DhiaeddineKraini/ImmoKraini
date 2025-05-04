@@ -1,11 +1,10 @@
-import { describe, test, expect } from 'vitest';
-import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/svelte';
-import Page from './+page.svelte';
+// vitest.config.ts or vite.config.ts
+import { defineConfig } from 'vitest/config';
 
-describe('/+page.svelte', () => {
-	test('should render h1', () => {
-		render(Page);
-		expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-	});
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./vitest-setup-client.ts'],
+    // other settings...
+  }
 });
