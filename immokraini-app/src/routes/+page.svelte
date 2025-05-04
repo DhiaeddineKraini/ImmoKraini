@@ -4,7 +4,6 @@
 	import PropertyCard from '$lib/components/PropertyCard.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import { goto } from '$app/navigation';
-	
 	// Removed onMount, onDestroy from 'svelte'
 	// Removed browser from '$app/environment'
 	// Removed Motion One imports
