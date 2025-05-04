@@ -19,13 +19,13 @@
     let propertyType = form?.data?.propertyType ?? data?.property?.propertyType ?? '';
     let yearBuilt = form?.data?.yearBuilt ?? data?.property?.yearBuilt ?? '';
     let description = form?.data?.description ?? data?.property?.description ?? '';
-    let features = form?.data?.features ?? data?.property?.features ?? ''; 
+    let features = form?.data?.featuresString ?? data?.property?.featuresString ?? ''; 
     let videoUrl = form?.data?.videoUrl ?? data?.property?.videoUrl ?? '';
     let latitude = form?.data?.latitude ?? data?.property?.latitude ?? '';
     let longitude = form?.data?.longitude ?? data?.property?.longitude ?? '';
     let agentId = form?.data?.agentId ?? data?.property?.agentId ?? '';
     let currentImageUrl = data?.property?.currentImageUrl ?? ''; // Only from load data
-    let currentGalleryString = data?.property?.currentGalleryString ?? ''; // Only from load data
+    let currentGalleryString = data?.property?.galleryImagesString ?? ''; // Only from load data
     // --- End Form State Initialization ---
 
 

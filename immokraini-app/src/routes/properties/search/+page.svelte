@@ -38,7 +38,7 @@
                 <!-- Use PropertyCard component -->
                  <div class="property-card-wrapper h-full"> 
                     <PropertyCard 
-                        imageUrl={property.imageUrl} 
+                        imageUrl={property.imageUrl ?? undefined} 
                         detailUrl={`/properties/${property.slug}`} 
                         title={property.title} 
                         address={property.address}
