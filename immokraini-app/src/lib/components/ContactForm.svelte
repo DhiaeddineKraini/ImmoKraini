@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { enhance } from '$app/forms';
-    import type { SubmitFunction } from '@sveltejs/kit';
+    import { enhance } from '$app/forms'; // <<< Import enhance
+    import type { SubmitFunction } from '@sveltejs/kit'; // <<< Import type
     import { CheckCircle, AlertCircle } from 'lucide-svelte';
 
 	// Form field state
@@ -9,42 +9,45 @@
 	let subject = '';
 	let message = '';
 	
-    // Submission state
+    // Submission state - managed by enhance callback
     let submitting = false;
     let submissionError: string | null = null;
     let submissionSuccess = false;
 
-    const handleSubmit: SubmitFunction = ({ formData }) => {
-		submitting = true;
-		submissionError = null;
-		submissionSuccess = false;
+    // Enhance function to handle form submission feedback
+    const handleSubmit: SubmitFunction = async ({ formData, cancel }) => {
+        submitting = true;
+        submissionError = null;
+        submissionSuccess = false;
 
-        // Store values in case of error (optional, enhance might handle this)
+        // Store values in case of error
         name = formData.get('contact-name') as string;
         email = formData.get('contact-email') as string;
         subject = formData.get('contact-subject') as string;
         message = formData.get('contact-message') as string;
 
-		// Client-side validation (optional but recommended)
-		if (!name || !email || !message) {
-			submissionError = 'Please fill in required fields (Name, Email, Message).';
-			submitting = false;
-            throw new Error('Submission canceled due to validation errors.'); // Prevent submission
-		}
+        // Client-side validation
+        if (!name || !email || !message) {
+            submissionError = 'Please fill in required fields (Name, Email, Message).';
+            submitting = false;
+            cancel(); // Use the provided cancel function
+            return;
+        }
 
-		return async ({ result, update }) => {
-			if (result.type === 'success') {
-				submissionSuccess = true;
+        return async ({ result }) => {
+            if (result.type === 'success') {
+                submissionSuccess = true;
                 name = ''; email = ''; subject = ''; message = ''; // Clear form
-                // No need to close modal here
-			} else if (result.type === 'failure') {
-				submissionError = result.data?.error || 'Submission failed.';
-			} else if (result.type === 'error') {
+            } else if (result.type === 'failure') {
+                // Use the specific error key we defined in the action
+                submissionError = result.data?.contactError || 'Submission failed.'; 
+            } else if (result.type === 'error') {
                 submissionError = result.error.message || 'An unexpected error occurred.';
             }
-			submitting = false;
-		};
-	};
+            submitting = false;
+        };
+    };
+
 </script>
 
 {#if submissionSuccess}

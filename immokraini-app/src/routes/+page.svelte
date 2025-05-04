@@ -4,6 +4,7 @@
 	import PropertyCard from '$lib/components/PropertyCard.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import { goto } from '$app/navigation';
+	
 	// Removed onMount, onDestroy from 'svelte'
 	// Removed browser from '$app/environment'
 	// Removed Motion One imports
@@ -86,7 +87,7 @@
 				</button>
 				<button
 					class="bg-transparent border-2 border-white text-white hover:bg-white/20 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
-					on:click={() => goto('/sell-with-us')}
+					on:click={() => goto('/sell')}
 				>
 					Sell With Us
 				</button>
@@ -193,7 +194,7 @@
 						<div class="h-full"> 
 							<PropertyCard
 								imageUrl={property.imageUrl}
-								detailUrl={property.detailUrl} 
+								detailUrl={`/properties/${property.slug}`}
 								title={property.title}
 								address={property.address}
 								price={property.price}
