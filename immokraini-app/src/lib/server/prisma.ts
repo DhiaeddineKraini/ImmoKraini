@@ -1,18 +1,28 @@
 // src/lib/server/prisma.ts
 import { PrismaClient } from '@prisma/client';
-import { DATABASE_URL } from '$env/static/private'; // Import the URL
+import { DATABASE_URL } from '$env/static/private'; 
 
-// Ensure required variables are present
 if (!DATABASE_URL) {
-    // Throw an error during initialization if the URL is missing
-    // This prevents the server from starting in an invalid state
-    throw new Error("DATABASE_URL environment variable is not set. Cannot initialize Prisma Client.");
+    throw new Error("DATABASE_URL environment variable is not set.");
 }
 
-// Standard Prisma Client initialization
-// It automatically reads the DATABASE_URL from the environment via $env/static/private
-const prisma = new PrismaClient();
+// For Vercel Serverless Functions connecting to Neon, 
+// using the pooled connection string is still recommended.
+// Add ?pgbouncer=true if not already present in your Neon URL.
+// Prisma's default pooling might suffice, but pgbouncer is often better for serverless.
+const connectionString = DATABASE_URL.includes('pgbouncer=true') 
+                         ? DATABASE_URL 
+                         : `${DATABASE_URL}?pgbouncer=true&connection_limit=1`; 
+                         // Or simply use DATABASE_URL if Neon provides pgbouncer by default
 
-console.log('Prisma Client initialized for local PostgreSQL.'); 
+const prisma = new PrismaClient({
+    datasources: {
+        db: {
+            url: connectionString, // Use potentially modified URL
+        }
+    }
+});
+
+console.log('Prisma Client initialized for Vercel (PostgreSQL/Neon).'); 
 
 export default prisma; 
