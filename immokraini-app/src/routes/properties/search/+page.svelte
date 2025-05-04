@@ -55,7 +55,7 @@
         <div class="text-center py-16 px-6 bg-gray-50 rounded-lg shadow">
             <h2 class="text-xl font-semibold text-gray-700 mb-2">No Properties Found</h2>
             <p class="text-gray-500">
-                We couldn't find any properties matching your search criteria. Try adjusting your filters or <a href="/properties" class="text-brand-blue hover:underline">view all properties</a>.
+                We couldn't find any properties matching your search criteria. Try adjusting your filters or <a href="/properties/search" class="text-brand-blue hover:underline">view all properties</a>.
             </p>
         </div>
     {/if}
