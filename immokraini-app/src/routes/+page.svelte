@@ -192,6 +192,7 @@
 					{#each featuredProperties as property (property.id)}
 						<div class="h-full"> 
 							<PropertyCard
+							    id={property.id}
 								imageUrl={property.imageUrl}
 								detailUrl={`/properties/${property.slug}`}
 								title={property.title}
