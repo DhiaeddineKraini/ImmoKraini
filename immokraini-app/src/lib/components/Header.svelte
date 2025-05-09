@@ -58,28 +58,30 @@
 	  >
   
 	  <!-- Desktop nav links -->
-	  <div class="hidden sm:flex items-center space-x-4 md:space-x-6">
-		<a href="/" class="text-gray-700 hover:text-brand-blue transition-colors"
-		  >Home</a
-		>
+	  <div class="input">
+		<a href="/" class="value">
+		  <span>Home</span>
+		</a>
 		<a
 		  href="/properties/search"
-		  class="text-gray-700 hover:text-brand-blue transition-colors"
-		  >Properties</a
+		  class="value"
 		>
-		<a href="/sell" class="text-gray-700 hover:text-brand-blue transition-colors"
-		  >Sell</a
-		>
+		  <span>Properties</span>
+		</a>
+		<a href="/sell" class="value">
+		  <span>Sell</span>
+		</a>
 		<a
 		  href="/contact"
-		  class="text-gray-700 hover:text-brand-blue transition-colors"
-		  >Contact</a
+		  class="value"
 		>
+		  <span>Contact</span>
+		</a>
   
 		<!-- Saved‑properties link -->
 		<a
 		  href="/saved-properties"
-		  class="relative text-gray-600 hover:text-brand-blue transition-colors p-1"
+		  class="value"
 		  title="View Saved Properties"
 		>
 		  <Heart class="w-5 h-5" />
@@ -182,6 +184,61 @@
   <style lang="postcss">
 	.nav-link-mobile {
 	  @apply text-gray-700 hover:text-brand-blue transition-colors block px-2 py-1 rounded hover:bg-gray-50;
+	}
+
+	.input {
+	  display: flex;
+	  flex-direction: row;
+	  width: fit-content;
+	  background-color: transparent;
+	  justify-content: center;
+	  border-radius: 5px;
+	  gap: 7.5px;
+	}
+
+	.value {
+	  background-color: transparent;
+	  border: none;
+	  padding: 10px;
+	  color: #374151;
+	  display: flex;
+	  position: relative;
+	  gap: 5px;
+	  cursor: pointer;
+	  border-radius: 4px;
+	  transition: all 0.2s ease;
+	}
+
+	.value:not(:active):hover,
+	.value:focus {
+	  background-color: #f3f4f6;
+	}
+
+	.value:focus,
+	.value:active {
+	  background-color: #e5e7eb;
+	  outline: none;
+	}
+
+	.value::before {
+	  content: "";
+	  position: absolute;
+	  top: 35px;
+	  left: 10%;
+	  right: 10%;
+	  height: 2px;
+	  background-color: #2f81f7;
+	  border-radius: 5px;
+	  opacity: 0;
+	}
+
+	.value:focus::before,
+	.value:active::before {
+	  opacity: 1;
+	}
+
+	.value svg {
+	  width: 15px;
 	}
   </style>
   
