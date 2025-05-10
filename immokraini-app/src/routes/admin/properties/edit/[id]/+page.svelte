@@ -1,11 +1,33 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { invalidateAll } from '$app/navigation';
     import type { PageData, ActionData } from './$types'; // Use $types again
     import { AlertCircle, CheckCircle } from 'lucide-svelte';
     import type { Agent } from '@prisma/client'; 
 
     export let data: PageData; 
-    export let form: ActionData; 
+    export let form: ActionData & { 
+        errorCode?: string;
+        data?: {
+            title: string;
+            slug: string;
+            address: string;
+            price: number;
+            beds: number | null;
+            baths: number | null;
+            area: number | null;
+            propertyType: string | null;
+            yearBuilt: number | null;
+            description: string | null;
+            featuresString: string;
+            videoUrl: string | null;
+            latitude: number | null;
+            longitude: number | null;
+            agentId: string | null;
+            currentImageUrl: string;
+            galleryImagesString: string;
+        }
+    }; 
 
     // --- Initialize Form State Directly from Props ---
     // Use 'let' for variables bound to form inputs
@@ -30,28 +52,38 @@
 
 
     // --- Feedback and Submission State ---
-    let isSubmitting = false; // Normal variable, not reactive declaration
-    // Derive feedback directly from form prop reactively
-    $: submissionError = form?.error ?? null;
-    $: submissionSuccess = form && !form.error; // Success when form exists and has no error
-    $: updatedTitle = form?.data?.title ?? ''; // Get title from form data instead
-    // --- End Feedback State ---
+    let isSubmitting = false;
+    $: submissionError = form?.error ?? '';
+    $: errorCode = form?.errorCode ?? undefined;
+    $: submissionSuccess = form && !form.error;
+    $: updatedTitle = form?.data?.title ?? '';
 
+    // Function to get error message based on error code
+    function getErrorMessage(code: string | undefined, defaultMessage: string): string {
+        switch (code) {
+            case 'INVALID_ID':
+                return 'Invalid property ID provided.';
+            case 'NOT_FOUND':
+                return 'The property you are trying to edit no longer exists.';
+            case 'DUPLICATE_SLUG':
+                return 'A property with this slug already exists.';
+            case 'INVALID_SLUG':
+                return 'Invalid slug format. Use only lowercase letters, numbers, and hyphens.';
+            case 'INVALID_IMAGE':
+                return 'Invalid image format or size. Please try a different image.';
+            case 'SERVER_ERROR':
+                return 'An unexpected error occurred. Please try again later.';
+            default:
+                return defaultMessage;
+        }
+    }
 
     // Enhance function
     const handleSubmit: import('@sveltejs/kit').SubmitFunction = () => {
-        isSubmitting = true; 
-        // Clear previous feedback state immediately
-        submissionError = null; 
-        submissionSuccess = false;
-        updatedTitle = ''; 
-
-        return async ({ result, update }) => {
-            isSubmitting = false; // Reset submitting state AFTER response
-            
-            // If submission failed and returned data, update local state
-            // Note: 'form' prop updates automatically, so this might be redundant
-            // if reactive declarations were used correctly, but let's be explicit
+        isSubmitting = true;
+        submissionError = '';  // Use empty string instead of null
+        return async ({ result }) => {
+            isSubmitting = false;
             if (result.type === 'failure' && result.data?.data) {
                 const returnedData = result.data.data;
                 title = returnedData.title ?? title;
@@ -69,13 +101,9 @@
                 latitude = returnedData.latitude ?? latitude;
                 longitude = returnedData.longitude ?? longitude;
                 agentId = returnedData.agentId ?? agentId;
-                // Don't reset image URLs from form failure data
             } else if (result.type === 'success') {
-                 // Optionally clear form on success if not redirecting
-                 // title = ''; slug = ''; address = ''; price = ''; // etc.
+                await invalidateAll();
             }
-            
-            // update() // Call if you need to refresh page data from load function
         };
     };
 
@@ -93,10 +121,16 @@
     </div>
     
     {#if submissionError}
-        <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>Error: {submissionError}</span></div>
+        <div class="feedback error">
+            <AlertCircle class="w-5 h-5 flex-shrink-0" />
+            <span>{getErrorMessage(errorCode, submissionError || 'An error occurred')}</span>
+        </div>
     {/if}
     {#if submissionSuccess} 
-         <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>Property "{updatedTitle}" updated successfully!</span></div>
+        <div class="feedback success">
+            <CheckCircle class="w-5 h-5 flex-shrink-0" />
+            <span>Property "{updatedTitle}" updated successfully!</span>
+        </div>
     {/if}
 
     <form method="POST" use:enhance={handleSubmit} enctype="multipart/form-data" class="space-y-4">

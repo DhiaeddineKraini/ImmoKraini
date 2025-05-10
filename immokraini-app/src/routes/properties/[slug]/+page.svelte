@@ -2,9 +2,10 @@
   // Core SvelteKit imports
   import type { PageData } from './$types';
   import { onMount, onDestroy, afterUpdate } from 'svelte'; 
+  
 
   // UI Components / Icons
-  import { MapPin, Bed, Bath, Maximize, Video } from 'lucide-svelte'; // Added Video
+  import { MapPin, Bed, Bath, Maximize, Video, Heart } from 'lucide-svelte'; // Added Video
   import Modal from '$lib/components/Modal.svelte'; // Import Modal
   import InquiryForm from '$lib/components/InquiryForm.svelte'; // Import Form 
 
@@ -18,6 +19,9 @@
   
   // Register Swiper custom elements (run once)
   register();
+
+   // <<< ADDED: Import favorites store and functions >>>
+   import savedPropertyIds, { toggleFavorite } from '$lib/stores/favoritesStore';
 
   // --- Component Props & Data ---
   export let data: PageData; 
@@ -56,6 +60,17 @@
       spaceBetween: 10, slidesPerView: 4, freeMode: true, watchSlidesProgress: true,
       breakpoints: { 640: { slidesPerView: 5 }, 768: { slidesPerView: 6 }, 1024: { slidesPerView: 4 } }
   };
+
+  // <<< ADDED: Reactive variable for this page's property favorite status >>>
+  $: isThisPropertyFavorite = property?.id ? $savedPropertyIds.includes(property.id) : false; 
+
+  // <<< ADDED: Handler for detail page favorite button click >>>
+  function handleDetailPageFavoriteClick() {
+      if (property?.id) {
+          toggleFavorite(property.id);
+      }
+  }
+
 
   // --- Lifecycle Hooks ---
   onMount(async () => { 
@@ -254,7 +269,24 @@
               <Video class="w-5 h-5 inline-block mr-1 -mt-1" /> Watch Video Tour
             </a>
           {/if}
-          <button class="w-full bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md shadow hover:bg-gray-300 transition duration-300 ease-in-out"> Save Property </button>
+
+          <!-- Save Button -->
+          <button 
+          on:click={handleDetailPageFavoriteClick}
+          class="w-full font-semibold py-3 px-4 rounded-md shadow transition-colors duration-200 flex items-center justify-center gap-2"
+          class:bg-red-500={isThisPropertyFavorite} 
+          class:text-white={isThisPropertyFavorite}
+          class:bg-gray-200={!isThisPropertyFavorite} 
+          class:text-gray-800={!isThisPropertyFavorite}
+          class:hover:bg-red-600={isThisPropertyFavorite}
+          class:hover:bg-gray-300={!isThisPropertyFavorite}
+          aria-pressed={isThisPropertyFavorite}
+        > 
+          <Heart class="w-5 h-5" fill={isThisPropertyFavorite ? 'currentColor' : 'none'} />
+          {isThisPropertyFavorite ? 'Saved' : 'Save Property'}
+        </button>          <!-- End Save Button -->
+
+        
         </div>
       </div>
       {#if property.agent}

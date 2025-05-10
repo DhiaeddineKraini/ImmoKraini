@@ -4,6 +4,7 @@
 	import PropertyCard from '$lib/components/PropertyCard.svelte';
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import { goto } from '$app/navigation';
+	import InteractiveHover from './InteractiveHover.svelte';
 	// Removed onMount, onDestroy from 'svelte'
 	// Removed browser from '$app/environment'
 	// Removed Motion One imports
@@ -33,17 +34,21 @@
 	let searchPropertyType: string = '';
 	let searchMinPrice: string = '';
 	let searchMaxPrice: string = '';
+	let searchMinBeds: string = '';
+	let searchMinBaths: string = '';
 	/* ───────── End Search-form state ───────── */
 
 
 	/* ───────── Form-submit handler ───────── */
 	function handleSearchSubmit() {
-		const searchParams = new URLSearchParams(); // Changed variable name for clarity
+		const searchParams = new URLSearchParams();
 		if (searchLocation.trim()) searchParams.set('location', searchLocation.trim());
 		if (searchPropertyType) searchParams.set('type', searchPropertyType);
 		if (searchMinPrice) searchParams.set('minPrice', searchMinPrice);
 		if (searchMaxPrice) searchParams.set('maxPrice', searchMaxPrice);
-		goto(`/properties/search?${searchParams.toString()}`); // Use searchParams
+		if (searchMinBeds) searchParams.set('minBeds', searchMinBeds);
+		if (searchMinBaths) searchParams.set('minBaths', searchMinBaths);
+		goto(`/properties/search?${searchParams.toString()}`);
 	}
 	/* ───────── End Form-submit handler ───────── */
 
@@ -78,18 +83,22 @@
 				Explore exclusive properties with ImmoKraini, your trusted real estate partner.
 			</p>
 			<div class="flex flex-col sm:flex-row justify-center gap-4">
-				<button
-					class="bg-white text-muted-blue hover:bg-gray-100 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
-					on:click={() => document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' })}
-				>
-					Search Properties
-				</button>
-				<button
-					class="bg-transparent border-2 border-white text-white hover:bg-white/20 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
-					on:click={() => goto('/sell')}
-				>
-					Sell With Us
-				</button>
+				<InteractiveHover>
+					<button
+						class="bg-white text-muted-blue hover:bg-gray-100 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
+						on:click={() => document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' })}
+					>
+						Search Properties
+					</button>
+				</InteractiveHover>
+				<InteractiveHover>
+					<button
+						class="bg-transparent border-2 border-white text-white hover:bg-white/20 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
+						on:click={() => goto('/sell')}
+					>
+						Sell With Us
+					</button>
+				</InteractiveHover>
 			</div>
 		</div>
 	</section>
@@ -103,7 +112,7 @@
 		<div class="max-w-5xl mx-auto bg-gray-50 p-6 sm:p-8 rounded-lg shadow-lg">
 			<form
 				on:submit|preventDefault={handleSearchSubmit}
-				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_2fr_auto] gap-4 items-end"
+				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
 			>
 				<!-- Location -->
 				<div class="lg:col-span-1">
@@ -135,7 +144,7 @@
 				</div>
 
 				<!-- Price range -->
-				<div class="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1"> 
+				<div class="grid grid-cols-2 gap-2 lg:col-span-1">
 					<div>
 						<label for="min-price" class="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
 						<input
@@ -163,11 +172,42 @@
 					</div>
 				</div>
 
+				<!-- Advanced Filters -->
+				<div class="grid grid-cols-2 gap-2 lg:col-span-1">
+					<div>
+						<label for="min-beds" class="block text-sm font-medium text-gray-700 mb-1">Min Beds</label>
+						<select
+							id="min-beds"
+							bind:value={searchMinBeds}
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
+						>
+							<option value="">Any</option>
+							{#each [1, 2, 3, 4, 5, 6] as num}
+								<option value={num}>{num}+</option>
+							{/each}
+						</select>
+					</div>
+
+					<div>
+						<label for="min-baths" class="block text-sm font-medium text-gray-700 mb-1">Min Baths</label>
+						<select
+							id="min-baths"
+							bind:value={searchMinBaths}
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
+						>
+							<option value="">Any</option>
+							{#each [1, 2, 3, 4, 5] as num}
+								<option value={num}>{num}+</option>
+							{/each}
+						</select>
+					</div>
+				</div>
+
 				<!-- Submit -->
-				<div class="sm:col-span-2 lg:col-span-1"> 
+				<div class="sm:col-span-2 lg:col-span-4">
 					<button
 						type="submit"
-						class="w-full bg-brand-blue text-white font-semibold py-2 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue h-[42px]"
+						class="search-button w-full bg-brand-blue text-white font-semibold py-2 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue h-[42px]"
 					>
 						Search
 					</button>
@@ -192,6 +232,7 @@
 					{#each featuredProperties as property (property.id)}
 						<div class="h-full"> 
 							<PropertyCard
+							    id={property.id}
 								imageUrl={property.imageUrl}
 								detailUrl={`/properties/${property.slug}`}
 								title={property.title}
@@ -209,12 +250,31 @@
 			{/if}
 
 			<div class="text-center mt-12">
-				<a
-					href="/properties/search" 
-					class="inline-block bg-brand-blue text-white font-semibold py-3 px-8 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out"
-				>
-					View All Properties
-				</a>
+				<div class="relative inline-flex items-center justify-center gap-4 group">
+					<a
+						href="/properties/search" 
+						class="group relative inline-flex items-center justify-center text-base rounded-md bg-brand-blue px-8 py-3 font-semibold text-white transition-all duration-200 hover:bg-brand-blue hover:shadow-lg hover:-translate-y-0.5 hover:shadow-brand-blue/30"
+					>
+						View All Properties
+						<svg
+							aria-hidden="true"
+							viewBox="0 0 10 10"
+							height="10"
+							width="10"
+							fill="none"
+							class="mt-0.5 ml-2 -mr-1 stroke-white stroke-2"
+						>
+							<path
+								d="M0 5h7"
+								class="transition opacity-0 group-hover:opacity-100"
+							></path>
+							<path
+								d="M1 1l4 4-4 4"
+								class="transition group-hover:translate-x-[3px]"
+							></path>
+						</svg>
+					</a>
+				</div>
 			</div>
 		</div>
 	</section>
@@ -371,6 +431,51 @@
     .text-muted-blue { color: var(--color-muted-blue); }
     .bg-muted-blue { background-color: var(--color-muted-blue); }
     .bg-brand-orange { background-color: var(--color-brand-orange); }
-    .text-brand-orange { color: var(--color-brand-orange); } /* Added text color for orange icon */
+    .text-brand-orange { color: var(--color-brand-orange); }
 
+    /* Search button effects */
+    .search-button {
+        position: relative;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+    }
+
+    .search-button:hover {
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .search-button:hover::before {
+        animation: shine 1.5s ease-out infinite;
+    }
+
+    .search-button::before {
+        content: "";
+        position: absolute;
+        width: 100px;
+        height: 100%;
+        background-image: linear-gradient(
+            120deg,
+            rgba(255, 255, 255, 0) 30%,
+            rgba(255, 255, 255, 0.8),
+            rgba(255, 255, 255, 0) 70%
+        );
+        top: 0;
+        left: -100px;
+        opacity: 0.6;
+    }
+
+    @keyframes shine {
+        0% {
+            left: -100px;
+        }
+        60% {
+            left: 100%;
+        }
+        to {
+            left: 100%;
+        }
+    }
 </style>
