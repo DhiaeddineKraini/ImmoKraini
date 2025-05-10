@@ -4,11 +4,9 @@
 	import Footer from '$lib/components/Footer.svelte'; 
     import { fade } from 'svelte/transition'; // <<< Import fade transition
     import { page } from '$app/stores'; // <<< Import page store to get current path for key
-
 </script>
 
 <svelte:head>
-
     <title>ImmoKraini - Djerba Real Estate</title> 
     <meta name="description" content="Find your perfect property in Djerba, Tunisia with ImmoKraini. Explore listings for villas, apartments, land, and more. Your trusted local real estate experts." />
     <meta property="og:title" content="ImmoKraini - Djerba Real Estate" />

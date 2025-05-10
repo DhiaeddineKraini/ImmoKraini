@@ -1,18 +1,44 @@
 <!-- src/routes/admin/staff/+page.svelte -->
 <script lang="ts">
-    import type { PageData, ActionData } from './$types'; // <<< Import ActionData
-    import { enhance } from '$app/forms'; // <<< Import enhance
+    // --- Add these types ---
+    type Agent = {
+        id: string;
+        name: string;
+        email: string;
+        phone: string | null;
+        imageUrl: string | null;
+        _count?: { properties: number };
+    };
+
+    type MyPageData = {
+        agents: Agent[];
+        error?: string;
+    };
+
+    type MyActionData = {
+        deleteError?: string;
+        deleteErrorCode?: string;
+        deleteSuccess?: boolean;
+        deletedName?: string;
+        deletedId?: string;
+        unassignedProperties?: number;
+    };
+
+    import { enhance } from '$app/forms';
+    import { invalidateAll } from '$app/navigation';
     import { Plus, Edit, Trash2, AlertCircle, CheckCircle } from 'lucide-svelte'; 
 
-    export let data: PageData;
-    export let form: ActionData; // <<< Add form prop for feedback
+    export let data: MyPageData;
+    export let form: MyActionData;
 
     $: agents = data?.agents || [];
-    $: deleteError = form?.deleteError ?? null; // Reactive feedback state
+    $: deleteError = form?.deleteError ?? null;
+    $: deleteErrorCode = form?.deleteErrorCode ?? null;
     $: deleteSuccess = form?.deleteSuccess ?? false;
     $: deletedName = form?.deletedName ?? '';
+    $: unassignedProperties = form?.unassignedProperties ?? 0;
 
-     // Confirmation dialog function for delete
+    // Confirmation dialog function for delete
     function confirmDelete(event: Event) {
         const formElement = event.currentTarget as HTMLFormElement;
         const agentName = formElement.dataset.agentName || 'this staff member';
@@ -21,6 +47,21 @@
         }
     }
 
+    // Function to get error message based on error code
+    function getErrorMessage(code: string | null): string {
+        switch (code) {
+            case 'INVALID_ID':
+                return 'Invalid agent ID provided.';
+            case 'NOT_FOUND':
+                return 'The agent you are trying to delete no longer exists.';
+            case 'REFERENCE_ERROR':
+                return 'Cannot delete this agent due to existing references. Please contact support.';
+            case 'SERVER_ERROR':
+                return 'An unexpected error occurred. Please try again later.';
+            default:
+                return deleteError || 'An error occurred while deleting the agent.';
+        }
+    }
 </script>
 
 <svelte:head>
@@ -34,12 +75,32 @@
     </a>
 </div>
 
- <!-- Feedback Messages -->
- {#if data?.error} <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>{data.error}</span></div> {/if}
- {#if deleteError} <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>Error deleting: {deleteError}</span></div> {/if}
- {#if deleteSuccess} <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>Staff member "{deletedName}" deleted.</span></div> {/if}
- <!-- End Feedback Messages -->
+<!-- Feedback Messages -->
+{#if data?.error}
+    <div class="feedback error">
+        <AlertCircle class="w-5 h-5 flex-shrink-0" />
+        <span>{data.error}</span>
+    </div>
+{/if}
 
+{#if deleteError}
+    <div class="feedback error">
+        <AlertCircle class="w-5 h-5 flex-shrink-0" />
+        <span>{getErrorMessage(deleteErrorCode)}</span>
+    </div>
+{/if}
+
+{#if deleteSuccess}
+    <div class="feedback success">
+        <CheckCircle class="w-5 h-5 flex-shrink-0" />
+        <span>
+            Staff member "{deletedName}" deleted successfully.
+            {#if unassignedProperties > 0}
+                {unassignedProperties} {unassignedProperties === 1 ? 'property was' : 'properties were'} unassigned.
+            {/if}
+        </span>
+    </div>
+{/if}
 
 <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md overflow-x-auto">
     <table class="w-full min-w-[600px] text-sm text-left text-gray-600">
@@ -49,6 +110,7 @@
                 <th scope="col" class="px-4 py-3">Name</th>
                 <th scope="col" class="px-4 py-3">Email</th>
                 <th scope="col" class="px-4 py-3">Phone</th>
+                <th scope="col" class="px-4 py-3">Properties</th>
                 <th scope="col" class="px-4 py-3 text-right">Actions</th>
             </tr>
         </thead>
@@ -68,6 +130,7 @@
                     </th>
                     <td class="px-4 py-3">{agent.email}</td>
                     <td class="px-4 py-3">{agent.phone || '-'}</td>
+                    <td class="px-4 py-3">{agent._count?.properties ?? 0}</td>
                     <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                         <a href={`/admin/staff/edit/${agent.id}`} class="text-blue-600 hover:text-blue-800 inline-flex items-center p-1 align-middle" title="Edit">
                             <Edit class="w-4 h-4" />
@@ -76,7 +139,11 @@
                         <form 
                             method="POST" 
                             action="?/delete" 
-                            use:enhance 
+                            use:enhance={() => async ({ result }) => {
+                                if (result.type === 'success') {
+                                    await invalidateAll();
+                                }
+                            }}
                             class="inline-block align-middle"
                             on:submit={confirmDelete}
                             data-agent-name={agent.name} 
@@ -90,7 +157,7 @@
                 </tr>
             {:else}
                 <tr>
-                    <td colspan="5" class="text-center py-8 text-gray-500">No staff members found.</td>
+                    <td colspan="6" class="text-center py-8 text-gray-500">No staff members found.</td>
                 </tr>
             {/each}
         </tbody>

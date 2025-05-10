@@ -2,6 +2,7 @@
 <script lang="ts">
     import type { PageData } from './$types'; 
     import { enhance } from '$app/forms';
+    import { invalidateAll } from '$app/navigation';
     import { Plus, Trash2, Edit, AlertCircle, CheckCircle, Star, XCircle } from 'lucide-svelte'; // Added Star, XCircle
 
     export let data: PageData; 
@@ -14,7 +15,8 @@
         toggleError?: string;
         toggleSuccess?: boolean;
         updatedTitle?: string;
-        updatedStatus?: boolean; // To know the new status after toggle
+        updatedStatus?: boolean;
+        errorCode?: string; // Add error code for better error handling
     } | null | undefined; 
 
     // Define extended property type
@@ -29,6 +31,22 @@
     
     // Use optional chaining for safety and type assertion
     $: properties = (data?.properties || []) as Property[]; 
+
+    // Function to get error message based on error code
+    function getErrorMessage(code: string | null, defaultMessage: string): string {
+        switch (code) {
+            case 'INVALID_ID':
+                return 'Invalid property ID provided.';
+            case 'NOT_FOUND':
+                return 'The property you are trying to modify no longer exists.';
+            case 'DUPLICATE_SLUG':
+                return 'A property with this slug already exists.';
+            case 'SERVER_ERROR':
+                return 'An unexpected error occurred. Please try again later.';
+            default:
+                return defaultMessage;
+        }
+    }
 
     // Confirmation dialog function for delete
     function confirmDelete(event: Event) {
@@ -99,7 +117,11 @@
                         <form 
                             method="POST" 
                             action="?/toggleFeatured" 
-                            use:enhance 
+                            use:enhance={() => async ({ result }) => {
+                                if (result.type === 'success') {
+                                    await invalidateAll();
+                                }
+                            }}
                             class="inline-block align-middle"
                         >
                             <input type="hidden" name="propertyId" value={property.id} />
@@ -131,8 +153,16 @@
 
                         <!-- Delete Form -->
                         <form 
-                            method="POST" action="?/delete" use:enhance class="inline-block align-middle"
-                            on:submit={confirmDelete} data-property-title={property.title} 
+                            method="POST" 
+                            action="?/delete" 
+                            use:enhance={() => async ({ result }) => {
+                                if (result.type === 'success') {
+                                    await invalidateAll();
+                                }
+                            }}
+                            class="inline-block align-middle"
+                            on:submit={confirmDelete} 
+                            data-property-title={property.title} 
                         >
                             <input type="hidden" name="propertyId" value={property.id} />
                             <button type="submit" class="text-red-600 hover:text-red-800 inline-flex items-center p-1" title="Delete">

@@ -34,17 +34,21 @@
 	let searchPropertyType: string = '';
 	let searchMinPrice: string = '';
 	let searchMaxPrice: string = '';
+	let searchMinBeds: string = '';
+	let searchMinBaths: string = '';
 	/* ───────── End Search-form state ───────── */
 
 
 	/* ───────── Form-submit handler ───────── */
 	function handleSearchSubmit() {
-		const searchParams = new URLSearchParams(); // Changed variable name for clarity
+		const searchParams = new URLSearchParams();
 		if (searchLocation.trim()) searchParams.set('location', searchLocation.trim());
 		if (searchPropertyType) searchParams.set('type', searchPropertyType);
 		if (searchMinPrice) searchParams.set('minPrice', searchMinPrice);
 		if (searchMaxPrice) searchParams.set('maxPrice', searchMaxPrice);
-		goto(`/properties/search?${searchParams.toString()}`); // Use searchParams
+		if (searchMinBeds) searchParams.set('minBeds', searchMinBeds);
+		if (searchMinBaths) searchParams.set('minBaths', searchMinBaths);
+		goto(`/properties/search?${searchParams.toString()}`);
 	}
 	/* ───────── End Form-submit handler ───────── */
 
@@ -108,7 +112,7 @@
 		<div class="max-w-5xl mx-auto bg-gray-50 p-6 sm:p-8 rounded-lg shadow-lg">
 			<form
 				on:submit|preventDefault={handleSearchSubmit}
-				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_2fr_auto] gap-4 items-end"
+				class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
 			>
 				<!-- Location -->
 				<div class="lg:col-span-1">
@@ -140,7 +144,7 @@
 				</div>
 
 				<!-- Price range -->
-				<div class="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1"> 
+				<div class="grid grid-cols-2 gap-2 lg:col-span-1">
 					<div>
 						<label for="min-price" class="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
 						<input
@@ -168,8 +172,39 @@
 					</div>
 				</div>
 
+				<!-- Advanced Filters -->
+				<div class="grid grid-cols-2 gap-2 lg:col-span-1">
+					<div>
+						<label for="min-beds" class="block text-sm font-medium text-gray-700 mb-1">Min Beds</label>
+						<select
+							id="min-beds"
+							bind:value={searchMinBeds}
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
+						>
+							<option value="">Any</option>
+							{#each [1, 2, 3, 4, 5, 6] as num}
+								<option value={num}>{num}+</option>
+							{/each}
+						</select>
+					</div>
+
+					<div>
+						<label for="min-baths" class="block text-sm font-medium text-gray-700 mb-1">Min Baths</label>
+						<select
+							id="min-baths"
+							bind:value={searchMinBaths}
+							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
+						>
+							<option value="">Any</option>
+							{#each [1, 2, 3, 4, 5] as num}
+								<option value={num}>{num}+</option>
+							{/each}
+						</select>
+					</div>
+				</div>
+
 				<!-- Submit -->
-				<div class="sm:col-span-2 lg:col-span-1"> 
+				<div class="sm:col-span-2 lg:col-span-4">
 					<button
 						type="submit"
 						class="search-button w-full bg-brand-blue text-white font-semibold py-2 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue h-[42px]"

@@ -1,11 +1,18 @@
 <!-- src/routes/admin/staff/edit/[id]/+page.svelte -->
 <script lang="ts">
     import { enhance } from '$app/forms';
+    import { invalidateAll } from '$app/navigation';
     import type { PageData, ActionData } from './$types'; 
     import { AlertCircle, CheckCircle } from 'lucide-svelte';
 
     export let data: PageData; 
-    export let form: ActionData; 
+    export let form: ActionData & {
+        errorCode?: string;
+        name?: string;
+        email?: string;
+        phone?: string | null;
+        imageUrl?: string | null;
+    }; 
 
     // Initialize form state from loaded data or action data (on error)
     let name = form?.name ?? data?.agent?.name ?? '';
@@ -15,13 +22,34 @@
 
     // Feedback state
     let isSubmitting = false; 
-    $: submissionError = form?.error ?? null;
-    // Success is handled by redirect in this case
+    $: submissionError = form?.error ?? '';
+    $: errorCode = form?.errorCode ?? undefined;
+    $: submissionSuccess = form && !form.error;
+
+    // Function to get error message based on error code
+    function getErrorMessage(code: string | undefined, defaultMessage: string): string {
+        switch (code) {
+            case 'INVALID_ID':
+                return 'Invalid staff ID provided.';
+            case 'NOT_FOUND':
+                return 'The staff member you are trying to edit no longer exists.';
+            case 'DUPLICATE_EMAIL':
+                return 'This email address is already in use by another staff member.';
+            case 'INVALID_EMAIL':
+                return 'Please enter a valid email address.';
+            case 'INVALID_IMAGE':
+                return 'Invalid image format or size. Please try a different image.';
+            case 'SERVER_ERROR':
+                return 'An unexpected error occurred. Please try again later.';
+            default:
+                return defaultMessage;
+        }
+    }
 
     // Enhance function
     const handleSubmit: import('@sveltejs/kit').SubmitFunction = () => {
         isSubmitting = true; 
-        submissionError = null; 
+        submissionError = ''; 
         return async ({ result }) => {
             isSubmitting = false; 
             if (result.type === 'failure' && result.data) {
@@ -31,7 +59,9 @@
                 email = returnedData.email ?? email;
                 phone = returnedData.phone ?? phone;
                 currentImageUrl = returnedData.imageUrl ?? currentImageUrl;
-            } 
+            } else if (result.type === 'success') {
+                await invalidateAll();
+            }
         };
     };
 
@@ -48,7 +78,17 @@
     </div>
     
     {#if submissionError}
-        <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>Error: {submissionError}</span></div>
+        <div class="feedback error">
+            <AlertCircle class="w-5 h-5 flex-shrink-0" />
+            <span>{getErrorMessage(errorCode, submissionError || 'An error occurred')}</span>
+        </div>
+    {/if}
+    
+    {#if submissionSuccess}
+        <div class="feedback success">
+            <CheckCircle class="w-5 h-5 flex-shrink-0" />
+            <span>Staff member "{name}" updated successfully!</span>
+        </div>
     {/if}
     
     <form method="POST" use:enhance={handleSubmit} enctype="multipart/form-data" class="space-y-4">

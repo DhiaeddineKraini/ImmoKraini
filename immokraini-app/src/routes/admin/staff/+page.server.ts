@@ -6,7 +6,12 @@ import type { PageServerLoad, Actions } from './$types'; // Import Actions
 export const load: PageServerLoad = async () => {
     try {
         const agents = await prisma.agent.findMany({
-            orderBy: { name: 'asc' }
+            orderBy: { name: 'asc' },
+            include: {
+                _count: {
+                    select: { properties: true }
+                }
+            }
         });
         return { agents };
     } catch (err) {
@@ -16,17 +21,35 @@ export const load: PageServerLoad = async () => {
 };
 
 // --- ADD DELETE ACTION ---
-export const actions: Actions = {
+export const actions = {
     delete: async ({ request }) => {
         const formData = await request.formData();
         const agentId = formData.get('agentId') as string;
 
         if (!agentId) {
-            return fail(400, { deleteError: 'Invalid Agent ID.' });
+            return fail(400, { 
+                deleteError: 'Invalid Agent ID.',
+                deleteErrorCode: 'INVALID_ID'
+            });
         }
 
         try {
-            console.log(`Attempting to delete agent with ID: ${agentId}`);
+            // First check if agent exists and get their details
+            const agent = await prisma.agent.findUnique({
+                where: { id: agentId },
+                include: {
+                    _count: {
+                        select: { properties: true }
+                    }
+                }
+            });
+
+            if (!agent) {
+                return fail(404, { 
+                    deleteError: 'Agent not found.',
+                    deleteErrorCode: 'NOT_FOUND'
+                });
+            }
 
             // Use a transaction to ensure both operations succeed or fail together
             const [_, deletedAgent] = await prisma.$transaction([
@@ -38,20 +61,44 @@ export const actions: Actions = {
                 // 2. Delete the agent
                 prisma.agent.delete({
                     where: { id: agentId },
-                    select: { name: true } // Select name for feedback
+                    select: { 
+                        id: true,
+                        name: true,
+                        email: true
+                    }
                 })
             ]);
 
-            console.log(`Deleted agent: ${deletedAgent.name} and unassigned their properties.`);
-            return { deleteSuccess: true, deletedName: deletedAgent.name }; 
+            return { 
+                deleteSuccess: true, 
+                deletedName: deletedAgent.name,
+                deletedId: deletedAgent.id,
+                unassignedProperties: agent._count.properties
+            }; 
 
         } catch (err: any) {
             console.error("Error deleting agent:", err);
-            if (err.code === 'P2025') { // Record to delete not found
-                 return fail(404, { deleteError: 'Agent not found.' });
+            
+            // Handle specific Prisma errors
+            if (err.code === 'P2025') {
+                return fail(404, { 
+                    deleteError: 'Agent not found.',
+                    deleteErrorCode: 'NOT_FOUND'
+                });
             }
-            // Handle other potential errors (e.g., transaction failure)
-            return fail(500, { deleteError: 'Failed to delete agent.' });
+            
+            if (err.code === 'P2003') {
+                return fail(400, {
+                    deleteError: 'Cannot delete agent due to existing references.',
+                    deleteErrorCode: 'REFERENCE_ERROR'
+                });
+            }
+
+            // Handle other potential errors
+            return fail(500, { 
+                deleteError: 'An unexpected error occurred while deleting the agent.',
+                deleteErrorCode: 'SERVER_ERROR'
+            });
         }
     }
-};
+} satisfies Actions;
