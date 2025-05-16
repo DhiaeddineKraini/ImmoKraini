@@ -110,14 +110,29 @@ export const actions: Actions = {
         const mainImageFile = formData.get('imageUrl') as File | null;
         const galleryImageFiles = formData.getAll('galleryImages') as File[];
 
+        // New image inputs
+        const newMainImageFile = formData.get('newMainImageFile') as File | null;
+        const newGalleryImageFiles = formData.getAll('newGalleryImageFiles') as File[];
+        const imagesToDeleteUrlsString = formData.get('imagesToDeleteUrls') as string || '';
+        const imagesToDelete = imagesToDeleteUrlsString.split(',').map(url => url.trim()).filter(url => url);
+
+        // Determine if the current main image is marked for deletion
+        const currentMainImageUrl = formData.get('currentImageUrl') as string || '';
+        const deleteCurrentMainImage = imagesToDelete.includes(currentMainImageUrl);
+
         try {
-            if (mainImageFile && mainImageFile.size > 0) {
-                const buffer = Buffer.from(await mainImageFile.arrayBuffer());
+            // Process new main image file if provided
+            if (newMainImageFile && newMainImageFile.size > 0) {
+                const buffer = Buffer.from(await newMainImageFile.arrayBuffer());
                 newMainImageUrl = await uploadImageToCloudinary(buffer);
+            } else if (deleteCurrentMainImage) {
+                 // If no new main image is uploaded, but current is marked for deletion
+                newMainImageUrl = null; // Explicitly set to null to remove it
             }
 
-            if (galleryImageFiles && galleryImageFiles.length > 0 && galleryImageFiles[0].size > 0) {
-                for (const file of galleryImageFiles) {
+            // Process new gallery image files
+            if (newGalleryImageFiles && newGalleryImageFiles.length > 0 && newGalleryImageFiles[0].size > 0) {
+                for (const file of newGalleryImageFiles) {
                     if (!file || file.size === 0) continue;
                     const buffer = Buffer.from(await file.arrayBuffer());
                     const url = await uploadImageToCloudinary(buffer);
@@ -157,6 +172,37 @@ export const actions: Actions = {
             ...(newMainImageUrl && { imageUrl: newMainImageUrl }),
             ...(newGalleryUrls.length > 0 && { galleryImages: newGalleryUrls })
         };
+
+        // Logic to update imageUrl and galleryImages based on new uploads and deletions
+        let finalImageUrl: string | null | undefined = undefined; // undefined means no change unless specified
+        if (newMainImageUrl) { // New image uploaded, replaces old or sets new
+            finalImageUrl = newMainImageUrl;
+        } else if (deleteCurrentMainImage) { // No new image, but old one deleted
+            finalImageUrl = null;
+        }
+        // Only add imageUrl to updateData if it's explicitly set (to new URL or null)
+        if (finalImageUrl !== undefined) {
+            updateData.imageUrl = finalImageUrl;
+        }
+
+        // Logic for gallery images
+        const currentProperty = await prisma.property.findUnique({ 
+            where: { id: propertyId }, 
+            select: { galleryImages: true }
+        });
+        let existingGalleryImages = currentProperty?.galleryImages || [];
+
+        // Filter out images marked for deletion
+        existingGalleryImages = existingGalleryImages.filter(url => !imagesToDelete.includes(url));
+        
+        // Add newly uploaded images
+        const finalGalleryImages = [...existingGalleryImages, ...newGalleryUrls];
+
+        // Only update galleryImages if there are changes (new uploads or deletions)
+        // This prevents overwriting with an empty array if no new images and no deletions of existing ones.
+        if (newGalleryUrls.length > 0 || imagesToDelete.length > 0) {
+             updateData.galleryImages = finalGalleryImages;
+        }
 
         /* ---------- Update database ---------- */
         try {

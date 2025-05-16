@@ -10,7 +10,7 @@
 	// Removed Motion One imports
 
 	// UI Icons for sections
-	import { Award, Users, Send, Phone, Mail, MapPin } from 'lucide-svelte';
+	import { Award, Users, Send, Phone, Mail, MapPin, Loader } from 'lucide-svelte';
 
 	interface AgentInfo { id: string; name: string; email: string; phone: string | null; imageUrl: string | null; title?: string; }
 
@@ -36,11 +36,13 @@
 	let searchMaxPrice: string = '';
 	let searchMinBeds: string = '';
 	let searchMinBaths: string = '';
+	let isSearching: boolean = false;
 	/* ───────── End Search-form state ───────── */
 
 
 	/* ───────── Form-submit handler ───────── */
 	function handleSearchSubmit() {
+		isSearching = true;
 		const searchParams = new URLSearchParams();
 		if (searchLocation.trim()) searchParams.set('location', searchLocation.trim());
 		if (searchPropertyType) searchParams.set('type', searchPropertyType);
@@ -48,7 +50,9 @@
 		if (searchMaxPrice) searchParams.set('maxPrice', searchMaxPrice);
 		if (searchMinBeds) searchParams.set('minBeds', searchMinBeds);
 		if (searchMinBaths) searchParams.set('minBaths', searchMinBaths);
-		goto(`/properties/search?${searchParams.toString()}`);
+		goto(`/properties/search?${searchParams.toString()}`).catch(() => {
+			isSearching = false;
+		});
 	}
 	/* ───────── End Form-submit handler ───────── */
 
@@ -207,9 +211,17 @@
 				<div class="sm:col-span-2 lg:col-span-4">
 					<button
 						type="submit"
-						class="search-button w-full bg-brand-blue text-white font-semibold py-2 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue h-[42px]"
+						class="search-button w-full bg-brand-blue text-white font-semibold py-2 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue h-[42px] disabled:opacity-70 disabled:cursor-not-allowed"
+						disabled={isSearching}
 					>
-						Search
+						{#if isSearching}
+							<span class="flex items-center justify-center">
+								<Loader class="animate-spin w-5 h-5 mr-2" />
+								Searching...
+							</span>
+						{:else}
+							Search
+						{/if}
 					</button>
 				</div>
 			</form>

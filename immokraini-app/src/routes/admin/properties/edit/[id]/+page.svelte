@@ -4,6 +4,7 @@
     import type { PageData, ActionData } from './$types'; // Use $types again
     import { AlertCircle, CheckCircle } from 'lucide-svelte';
     import type { Agent } from '@prisma/client'; 
+    import { onDestroy } from 'svelte';
 
     export let data: PageData; 
     export let form: ActionData & { 
@@ -30,7 +31,6 @@
     }; 
 
     // --- Initialize Form State Directly from Props ---
-    // Use 'let' for variables bound to form inputs
     let title = form?.data?.title ?? data?.property?.title ?? '';
     let slug = form?.data?.slug ?? data?.property?.slug ?? '';
     let address = form?.data?.address ?? data?.property?.address ?? '';
@@ -46,9 +46,60 @@
     let latitude = form?.data?.latitude ?? data?.property?.latitude ?? '';
     let longitude = form?.data?.longitude ?? data?.property?.longitude ?? '';
     let agentId = form?.data?.agentId ?? data?.property?.agentId ?? '';
-    let currentImageUrl = data?.property?.currentImageUrl ?? ''; // Only from load data
-    let currentGalleryString = data?.property?.galleryImagesString ?? ''; // Only from load data
-    // --- End Form State Initialization ---
+    let currentImageUrl = data?.property?.currentImageUrl ?? '';
+    let currentGalleryString = data?.property?.galleryImagesString ?? '';
+    $: currentGalleryImages = currentGalleryString ? currentGalleryString.split(',').map(url => url.trim()).filter(url => url) : [];
+
+    let imagesToDelete = new Set<string>();
+
+    function toggleImageForDeletion(imageUrl: string) {
+        if (imagesToDelete.has(imageUrl)) {
+            imagesToDelete.delete(imageUrl);
+        } else {
+            imagesToDelete.add(imageUrl);
+        }
+        imagesToDelete = new Set(imagesToDelete); 
+    }
+
+    // --- Staging for New Gallery Images ---
+    interface StagedFile {
+        file: File;
+        previewUrl: string;
+        id: string;
+    }
+    let stagedNewGalleryFiles: StagedFile[] = [];
+
+    function handleNewGalleryFilesSelect(event: Event) {
+        const input = event.target as HTMLInputElement;
+        // Clear and revoke old staged files' preview URLs
+        stagedNewGalleryFiles.forEach(sf => URL.revokeObjectURL(sf.previewUrl));
+        stagedNewGalleryFiles = [];
+
+        if (input.files) {
+            for (const file of Array.from(input.files)) {
+                stagedNewGalleryFiles.push({
+                    file: file,
+                    previewUrl: URL.createObjectURL(file),
+                    id: crypto.randomUUID()
+                });
+            }
+            stagedNewGalleryFiles = [...stagedNewGalleryFiles]; // Trigger reactivity
+            input.value = ''; // Clear the file input so change event fires again if same files are re-selected after removal
+        }
+    }
+
+    function removeStagedGalleryFile(fileId: string) {
+        const fileToRemove = stagedNewGalleryFiles.find(sf => sf.id === fileId);
+        if (fileToRemove) {
+            URL.revokeObjectURL(fileToRemove.previewUrl);
+            stagedNewGalleryFiles = stagedNewGalleryFiles.filter(sf => sf.id !== fileId);
+        }
+    }
+
+    onDestroy(() => {
+        stagedNewGalleryFiles.forEach(sf => URL.revokeObjectURL(sf.previewUrl));
+    });
+    // --- End Form State Initialization & Staging ---
 
 
     // --- Feedback and Submission State ---
@@ -58,30 +109,34 @@
     $: submissionSuccess = form && !form.error;
     $: updatedTitle = form?.data?.title ?? '';
 
-    // Function to get error message based on error code
     function getErrorMessage(code: string | undefined, defaultMessage: string): string {
         switch (code) {
-            case 'INVALID_ID':
-                return 'Invalid property ID provided.';
-            case 'NOT_FOUND':
-                return 'The property you are trying to edit no longer exists.';
-            case 'DUPLICATE_SLUG':
-                return 'A property with this slug already exists.';
-            case 'INVALID_SLUG':
-                return 'Invalid slug format. Use only lowercase letters, numbers, and hyphens.';
-            case 'INVALID_IMAGE':
-                return 'Invalid image format or size. Please try a different image.';
-            case 'SERVER_ERROR':
-                return 'An unexpected error occurred. Please try again later.';
-            default:
-                return defaultMessage;
+            case 'INVALID_ID': return 'Invalid property ID provided.';
+            case 'NOT_FOUND': return 'The property you are trying to edit no longer exists.';
+            case 'DUPLICATE_SLUG': return 'A property with this slug already exists.';
+            case 'INVALID_SLUG': return 'Invalid slug format. Use only lowercase letters, numbers, and hyphens.';
+            case 'INVALID_IMAGE': return 'Invalid image format or size. Please try a different image.';
+            case 'SERVER_ERROR': return 'An unexpected error occurred. Please try again later.';
+            default: return defaultMessage;
         }
     }
 
-    // Enhance function
-    const handleSubmit: import('@sveltejs/kit').SubmitFunction = () => {
+    const handleSubmit: import('@sveltejs/kit').SubmitFunction = ({formData}) => {
         isSubmitting = true;
-        submissionError = '';  // Use empty string instead of null
+        submissionError = '';
+
+        // Remove the potentially existing 'newGalleryImageFiles' from formData
+        // as we are manually appending the curated staged files.
+        formData.delete('newGalleryImageFiles'); 
+        
+        // Append staged gallery files to FormData
+        for (const stagedFile of stagedNewGalleryFiles) {
+            formData.append('newGalleryImageFiles', stagedFile.file, stagedFile.file.name);
+        }
+        
+        // Ensure imagesToDeleteUrls is correctly populated from the Set
+        formData.set('imagesToDeleteUrls', Array.from(imagesToDelete).join(','));
+
         return async ({ result }) => {
             isSubmitting = false;
             if (result.type === 'failure' && result.data?.data) {
@@ -96,13 +151,18 @@
                 propertyType = returnedData.propertyType ?? propertyType;
                 yearBuilt = returnedData.yearBuilt ?? yearBuilt;
                 description = returnedData.description ?? description;
-                features = returnedData.features ?? features;
+                features = returnedData.features ?? features; // Ensure this is featuresString if that's what server expects for repopulation
                 videoUrl = returnedData.videoUrl ?? videoUrl;
                 latitude = returnedData.latitude ?? latitude;
                 longitude = returnedData.longitude ?? longitude;
                 agentId = returnedData.agentId ?? agentId;
+                // Note: Staged files are not cleared on failure, allowing user to correct other errors and resubmit.
             } else if (result.type === 'success') {
-                await invalidateAll();
+                // Clear staged files and their previews on successful submission
+                stagedNewGalleryFiles.forEach(sf => URL.revokeObjectURL(sf.previewUrl));
+                stagedNewGalleryFiles = [];
+                imagesToDelete.clear(); // Clear the set of images marked for deletion from server
+                await invalidateAll(); // Reload data from server
             }
         };
     };
@@ -168,11 +228,81 @@
         </div>
 
         <div class="border-t pt-4 mt-4">
-            <p class="text-sm text-gray-600 mb-2">Upload new images to replace existing ones (optional):</p>
-            <div> <label for="imageUrl" class="label">Replace Main Image</label> <input type="file" id="imageUrl" name="imageUrl" accept="image/*" class="file-input" disabled={isSubmitting}> {#if currentImageUrl} <span class="text-xs text-gray-500 ml-2">Current: <a href={currentImageUrl} target="_blank" class="hover:underline">View</a></span>{/if} <input type="hidden" name="currentImageUrl" value={currentImageUrl} /> </div>
-             <div> <label for="galleryImages" class="label">Replace Gallery Images</label> <input type="file" id="galleryImages" name="galleryImages" accept="image/*" multiple class="file-input" disabled={isSubmitting}> {#if currentGalleryString} <span class="text-xs text-gray-500 ml-2">({currentGalleryString.split(',').length} current images)</span>{/if} <input type="hidden" name="currentGalleryString" value={currentGalleryString} /> </div>
-        </div>
+            <h3 class="text-lg font-medium text-gray-800 mb-3">Manage Images</h3>
+            
+            <!-- Main Image -->
+            <div>
+                <label class="label">Main Image</label>
+                {#if currentImageUrl}
+                    <div class="mb-2 flex items-center space-x-2">
+                        <img src={currentImageUrl} alt="Main property image" class="h-20 w-20 object-cover rounded-md border" />
+                        <a href={currentImageUrl} target="_blank" class="text-xs text-brand-blue hover:underline">View</a>
+                        <button type="button" on:click={() => toggleImageForDeletion(currentImageUrl)} 
+                                class:selectedForDeletion={imagesToDelete.has(currentImageUrl)}
+                                class="text-xs px-2 py-1 rounded-md border hover:bg-red-50 
+                                       {imagesToDelete.has(currentImageUrl) ? 'bg-red-100 text-red-700 border-red-300' : 'bg-white text-gray-600 border-gray-300'}">
+                            {imagesToDelete.has(currentImageUrl) ? 'Undo Delete' : 'Delete Main Image'}
+                        </button>
+                    </div>
+                {/if}
+                <div>
+                    <label for="newMainImageFile" class="label text-sm">{currentImageUrl ? 'Upload New to Replace' : 'Upload Main Image'}</label>
+                    <input type="file" id="newMainImageFile" name="newMainImageFile" accept="image/*" class="file-input text-sm" disabled={isSubmitting}>
+                </div>
+            </div>
 
+            <!-- Gallery Images -->
+            <div class="mt-4">
+                <label class="label">Gallery Images</label>
+                {#if currentGalleryImages.length > 0}
+                    <p class="text-xs text-gray-500 mb-2">Current gallery ({currentGalleryImages.length} images). Click an image to mark for deletion.</p>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-3">
+                        {#each currentGalleryImages as imageUrl, index (imageUrl)}
+                            <div class="relative group">
+                                <img src={imageUrl} alt={`Gallery image ${index + 1}`} class="h-20 w-full object-cover rounded-md border {imagesToDelete.has(imageUrl) ? 'opacity-50 ring-2 ring-red-500' : 'opacity-100'}" />
+                                <button type="button" 
+                                        on:click={() => toggleImageForDeletion(imageUrl)}
+                                        class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 text-xs leading-none w-5 h-5 flex items-center justify-center opacity-80 group-hover:opacity-100">
+                                    &times;
+                                </button>
+                                {#if imagesToDelete.has(imageUrl)}
+                                    <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
+                                        <span class="text-white text-xs font-semibold">Marked for Deletion</span>
+                                    </div>
+                                {/if}
+                            </div>
+                        {/each}
+                    </div>
+                {/if}
+                
+                <!-- Staging area for New Gallery Images -->
+                <div class="mt-3">
+                    <label for="newGalleryImageFilesInput" class="label text-sm">Add New Gallery Images</label>
+                    <input type="file" id="newGalleryImageFilesInput" accept="image/*" multiple class="file-input text-sm" on:change={handleNewGalleryFilesSelect} disabled={isSubmitting}>
+                </div>
+
+                {#if stagedNewGalleryFiles.length > 0}
+                    <div class="mt-3 pt-3 border-t border-gray-200">
+                        <p class="text-xs font-medium text-gray-700 mb-2">Selected new images for gallery ({stagedNewGalleryFiles.length}):</p>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-3">
+                            {#each stagedNewGalleryFiles as stagedFile (stagedFile.id)}
+                                <div class="relative group">
+                                    <img src={stagedFile.previewUrl} alt={`Preview ${stagedFile.file.name}`} class="h-20 w-full object-cover rounded-md border" />
+                                    <button type="button" 
+                                            on:click={() => removeStagedGalleryFile(stagedFile.id)}
+                                            title="Remove this image before uploading"
+                                            class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-0.5 text-xs leading-none w-5 h-5 flex items-center justify-center opacity-70 group-hover:opacity-100 hover:bg-red-700 transition-opacity">
+                                        &times;
+                                    </button>
+                                </div>
+                            {/each}
+                        </div>
+                    </div>
+                {/if}
+            </div>
+            <!-- Hidden input to submit URLs of images to delete -->
+            <input type="hidden" name="imagesToDeleteUrls" value={Array.from(imagesToDelete).join(',')} />
+        </div>
 
         <div class="pt-4">
             <button type="submit" disabled={isSubmitting} class="w-full bg-brand-orange text-gray-900 font-semibold py-2.5 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center">
@@ -193,4 +323,8 @@
     .feedback { @apply mb-4 p-3 rounded-md text-sm border flex items-center gap-2; }
     .feedback.error { @apply bg-red-100 text-red-700 border-red-300; }
     .feedback.success { @apply bg-green-100 text-green-700 border-green-300; }
+
+    .selectedForDeletion {
+        @apply bg-red-100 text-red-700 border-red-300 hover:bg-red-200;
+    }
 </style>

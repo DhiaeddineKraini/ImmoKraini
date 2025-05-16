@@ -112,16 +112,33 @@
       // Initialize and link Swipers after elements are rendered
       if (!swipersInitialized && mainSwiperEl && thumbsSwiperEl) {
           try {
-              Object.assign(mainSwiperEl, mainSwiperParams);
+              // Prepare thumbs swiper first
               Object.assign(thumbsSwiperEl, thumbsSwiperParams);
-              mainSwiperEl.initialize();
               thumbsSwiperEl.initialize();
-              setTimeout(() => { // Use timeout to ensure swiper instances are ready
-                  if (mainSwiperEl?.swiper && thumbsSwiperEl?.swiper) {
+
+              // Prepare main swiper and link thumbs if thumbsSwiperEl.swiper is ready
+              const currentMainSwiperParams = { ...mainSwiperParams };
+              if (thumbsSwiperEl.swiper) {
+                  currentMainSwiperParams.thumbs = { swiper: thumbsSwiperEl.swiper };
+              }
+              Object.assign(mainSwiperEl, currentMainSwiperParams);
+              mainSwiperEl.initialize();
+              
+              // Ensure dynamic linking as a fallback or primary method if params didn't take immediately
+              if (mainSwiperEl.swiper && thumbsSwiperEl.swiper) {
+                  if (!mainSwiperEl.swiper.params.thumbs?.swiper) { // If not already linked via params
                       mainSwiperEl.swiper.thumbs.swiper = thumbsSwiperEl.swiper;
-                      swipersInitialized = true; 
                   }
-              }, 50); 
+                  swipersInitialized = true; 
+              } else {
+                  // If swiper instances are not ready, retry linking shortly
+                  setTimeout(() => {
+                      if (mainSwiperEl?.swiper && thumbsSwiperEl?.swiper) {
+                          mainSwiperEl.swiper.thumbs.swiper = thumbsSwiperEl.swiper;
+                          swipersInitialized = true;
+                      }
+                  }, 100); // Increased delay slightly for safety
+              }
           } catch (err) {
               console.error("Failed to initialize or link Swipers:", err);
           }
@@ -188,8 +205,8 @@
             <!-- svelte-ignore $$render_props_bindings -->
             <swiper-container class="thumbs-swiper p-2" bind:this={thumbsSwiperEl} init="false">
               {#each property.galleryImages as imgUrl, i (imgUrl)}
-                <swiper-slide class="opacity-60 hover:opacity-100 cursor-pointer rounded overflow-hidden">
-                  <img src={imgUrl} alt="Thumbnail {i+1}" class="w-full h-16 object-cover block"/>
+                <swiper-slide class="opacity-60 hover:opacity-100 cursor-pointer rounded overflow-hidden h-16">
+                  <img src={imgUrl} alt="Thumbnail {i+1}" class="w-full h-full object-cover block"/>
                 </swiper-slide>
               {/each}
             </swiper-container>
