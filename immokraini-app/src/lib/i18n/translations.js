@@ -32,6 +32,7 @@ export default {
     "home.featuredNone": "No featured properties available at the moment.",
     "home.featured.viewAll": "View All Properties",
     "home.whySectionTitle": "Why Choose ImmoKraini?",
+    "home.whySectionDetail": "We combine local expertise with modern technology to provide unparalleled real estate service in Djerba.",
     "home.why.localExperts": "Local Djerba Experts",
     "home.why.localExpertsDesc": "Deep understanding of the Djerba property market, neighborhoods, and culture.",
     "home.why.personalized": "Personalized Service",
@@ -127,7 +128,16 @@ export default {
     "general.save": "Save",
     "general.next": "Next",
     "general.previous": "Previous",
-    // ...add more as needed...
+    // footer
+    "footer.about": "Your trusted partner for finding the perfect property in Djerba, Tunisia. Experience excellence in real estate services.",
+    "footer.quickLinks": "Quick Links",
+    "footer.links.properties": "Properties",
+    "footer.links.sell": "Sell Your Property",
+    "footer.links.about": "About Us",
+    "footer.links.contact": "Contact",
+    "footer.followUs": "Follow Us",
+    "footer.copyright": "All Rights Reserved.",
+
   },
   fr: {
     "nav.home": "Accueil",
@@ -169,6 +179,7 @@ export default {
     "home.why.clientResults": "Résultats axés client",
     "home.why.clientResultsDesc": "Dévoués à obtenir le meilleur résultat possible pour chaque client.",
     "home.teamSectionTitle": "Rencontrez notre équipe",
+    "home.whySectionDetail": "Nous combinons l'expertise locale avec la technologie moderne pour fournir un service immobilier inégalé à Djerba.",
     "home.team.error": "Impossible de charger les informations de l'équipe.",
     "home.team.none": "Les informations de notre équipe ne sont pas disponibles actuellement.",
     "home.contactSectionTitle": "Contactez-nous",
@@ -212,10 +223,10 @@ export default {
     "saved.noneBody": "Cliquez sur l'icône cœur sur une annonce pour la sauvegarder ici.",
     "saved.browse": "Voir les propriétés",
     // Property Card
-    "property.beds": "Chambre",
+    "property.beds": "Chamb",
     "property.beds_plural": "Chambres",
-    "property.baths": "Salle de bain",
-    "property.baths_plural": "Salles de bain",
+    "property.baths": "S.de bain",
+    "property.baths_plural": "S. de bain",
     "property.sqm": "m²",
     "property.save": "Sauvegarder la propriété",
     "property.saved": "Sauvegardée",
@@ -257,6 +268,16 @@ export default {
     "general.save": "Sauvegarder",
     "general.next": "Suivant",
     "general.previous": "Précédent",
-    // ...add more as needed...
+    // footer
+    "footer.about": "Votre partenaire de confiance pour trouver la propriété parfaite à Djerba, Tunisie. Découvrez l'excellence des services immobiliers.",
+    "footer.quickLinks": "Liens rapides",
+    "footer.links.properties": "Propriétés",
+    "footer.links.sell": "Vendre votre propriété",
+    "footer.links.about": "A propos de nous",
+    "footer.links.contact": "Contactez-nous",
+    "footer.followUs": "Suivez-nous",
+    "footer.copyright": "Tous droits réservés.",
+
   }
+  
 };
