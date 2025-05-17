@@ -6,6 +6,7 @@
   
 	import { Heart } from 'lucide-svelte';
 	import savedPropertyIds from '$lib/stores/favoritesStore';
+	import { t, locale, locales } from '$lib/i18n/i18n';
   
 	let isMobileMenuOpen = false;
 	let headerElement: HTMLElement;
@@ -51,23 +52,32 @@
   
 	  <!-- Desktop nav (hidden on <640 px) -->
 	  <div class="input hidden sm:flex">
-		<a href="/" class="value"><span>Home</span></a>
-		<a href="/properties/search" class="value"><span>Properties</span></a>
-		<a href="/sell" class="value"><span>Sell</span></a>
-		<a href="/contact" class="value"><span>Contact</span></a>
+		<a href="/" class="value"><span>{$t('nav.home')}</span></a>
+		<a href="/properties/search" class="value"><span>{$t('nav.properties')}</span></a>
+		<a href="/sell" class="value"><span>{$t('nav.sell')}</span></a>
+		<a href="/contact" class="value"><span>{$t('nav.contact')}</span></a>
   
 		<!-- Saved-properties link -->
-		<a href="/saved-properties" class="value relative" title="View Saved Properties">
+		<a href="/saved-properties" class="value relative" title={$t('nav.savedProperties')}>
 		  <Heart class="w-5 h-5" />
 		  {#if savedCount > 0}
 			<span class="badge">{savedCount}</span>
 		  {/if}
 		</a>
+
+		<!-- Language selector -->
+		<div class="value">
+		  <select bind:value={$locale} class="bg-transparent border-none focus:outline-none cursor-pointer">
+			{#each locales as l}
+			  <option value={l}>{l.toUpperCase()}</option>
+			{/each}
+		  </select>
+		</div>
 	  </div>
   
 	  <!-- Mobile: saved icon + burger -->
 	  <div class="sm:hidden flex items-center space-x-3">
-		<a href="/saved-properties" class="relative p-1 text-gray-600 hover:text-brand-blue transition-colors" title="View Saved Properties">
+		<a href="/saved-properties" class="relative p-1 text-gray-600 hover:text-brand-blue transition-colors" title={$t('nav.savedProperties')}>
 		  <Heart class="w-5 h-5" />
 		  {#if savedCount > 0}
 			<span class="badge">{savedCount}</span>
@@ -97,10 +107,20 @@
 	  <div class="sm:hidden absolute left-0 right-0 bg-white shadow-lg border-t border-gray-100 p-4"
 		   transition:fly={{ y: -10, duration: 250, easing: quintOut }}>
 		<nav class="flex flex-col space-y-3">
-		  <a href="/" on:click={closeMobileMenu} class="nav-link-mobile">Home</a>
-		  <a href="/properties/search" on:click={closeMobileMenu} class="nav-link-mobile">Properties</a>
-		  <a href="/sell" on:click={closeMobileMenu} class="nav-link-mobile">Sell</a>
-		  <a href="/contact" on:click={closeMobileMenu} class="nav-link-mobile">Contact</a>
+		  <a href="/" on:click={closeMobileMenu} class="nav-link-mobile">{$t('nav.home')}</a>
+		  <a href="/properties/search" on:click={closeMobileMenu} class="nav-link-mobile">{$t('nav.properties')}</a>
+		  <a href="/sell" on:click={closeMobileMenu} class="nav-link-mobile">{$t('nav.sell')}</a>
+		  <a href="/contact" on:click={closeMobileMenu} class="nav-link-mobile">{$t('nav.contact')}</a>
+		  
+		  <!-- Language selector in mobile menu -->
+		  <div class="nav-link-mobile flex items-center">
+			<span class="mr-2">Language:</span>
+			<select bind:value={$locale} class="bg-transparent border-none focus:outline-none">
+			  {#each locales as l}
+				<option value={l}>{l.toUpperCase()}</option>
+			  {/each}
+			</select>
+		  </div>
 		</nav>
 	  </div>
 	{/if}
@@ -160,4 +180,3 @@
 	@apply text-gray-700 hover:text-brand-blue transition-colors block px-2 py-1 rounded hover:bg-gray-50;
   }
   </style>
-  

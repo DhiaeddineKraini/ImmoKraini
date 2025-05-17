@@ -5,6 +5,7 @@
     import savedPropertyIdsStore from '$lib/stores/favoritesStore';
     import PropertyCard from '$lib/components/PropertyCard.svelte';
 	import L from 'leaflet';
+    import { t } from '$lib/i18n/i18n.js'; // Import translation store
                                           // We need an API endpoint or load all via PageData
 
     // --- Corrected Approach: Fetch data for saved properties ---
@@ -79,21 +80,21 @@
 
 
 <svelte:head>
-    <title>Your Saved Properties | ImmoKraini</title>
+    <title>{$t('saved.metaTitle')}</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-8 text-muted-blue">Your Saved Properties</h1>
+    <h1 class="text-3xl font-bold mb-8 text-muted-blue">{$t('saved.title')}</h1>
 
     {#if isLoading}
-        <p class="text-center text-gray-600 py-16">Loading your saved properties...</p>
+        <p class="text-center text-gray-600 py-16">{$t('saved.loading')}</p>
     {:else if errorMessage}
         <div class="text-center py-16 px-6 bg-red-50 text-red-700 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-2">Oops!</h2>
+            <h2 class="text-xl font-semibold mb-2">{$t('saved.errorTitle')}</h2>
             <p>{errorMessage}</p>
         </div>
     {:else if savedPropertiesDetails.length > 0}
-        <p class="mb-6 text-gray-700">You have <strong class="font-semibold">{savedPropertiesDetails.length}</strong> property/properties saved.</p>
+        <p class="mb-6 text-gray-700">{$t('saved.count', { count: savedPropertiesDetails.length })}</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {#each savedPropertiesDetails as property (property.id)}
                 <div class="h-full"> 
@@ -112,14 +113,6 @@
             {/each}
         </div>
     {:else}
-        <div class="text-center py-16 px-6 bg-gray-50 rounded-lg shadow">
-            <h2 class="text-xl font-semibold text-gray-700 mb-2">No Saved Properties Yet</h2>
-            <p class="text-gray-500">
-                Click the heart icon on any property listing to save it here for later.
-            </p>
-            <a href="/properties/search" class="mt-6 inline-block bg-brand-blue text-white font-semibold py-2 px-6 rounded-md shadow hover:opacity-90">
-                Browse Properties
-            </a>
-        </div>
+        <p class="text-center text-gray-600 py-16">{$t('saved.empty')}</p>
     {/if}
 </div>

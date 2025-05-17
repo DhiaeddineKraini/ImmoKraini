@@ -5,6 +5,7 @@
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import { goto } from '$app/navigation';
 	import InteractiveHover from './InteractiveHover.svelte';
+	import { t } from'$lib/i18n/i18n.js'; // Import translation store
 	// Removed onMount, onDestroy from 'svelte'
 	// Removed browser from '$app/environment'
 	// Removed Motion One imports
@@ -61,10 +62,10 @@
 </script>
 
 <svelte:head>
-	<title>ImmoKraini | Premier Real Estate Agency in Djerba, Tunisia</title>
+	<title>{$t('home.metaTitle')}</title>
 	<meta
 		name="description"
-		content="Discover exclusive villas, apartments, and land for sale or rent in Djerba with ImmoKraini. Your expert guide to the Djerba property market."
+		content={$t('home.metaDescription')}
 	/>
 </svelte:head>
 
@@ -75,16 +76,13 @@
 		style="background-image: url('/hero-background.jpg');" 
 		aria-label="Hero section with background image" role="banner"
 	>
-	
 		<div class="absolute inset-0 bg-black/30 z-0" aria-hidden="true"></div>
-
-	
 		<div class="relative z-10 text-center p-8 max-w-4xl mx-auto">
 			<h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-				Find Your Dream Home in Djerba 
+				{$t('home.heroTitle')}
 			</h1>
 			<p class="text-lg md:text-xl mb-8 drop-shadow-md">
-				Explore exclusive properties with ImmoKraini, your trusted real estate partner.
+				{$t('home.heroSubtitle')}
 			</p>
 			<div class="flex flex-col sm:flex-row justify-center gap-4">
 				<InteractiveHover>
@@ -92,7 +90,7 @@
 						class="bg-white text-muted-blue hover:bg-gray-100 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
 						on:click={() => document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' })}
 					>
-						Search Properties
+						{$t('home.heroSearchButton')}
 					</button>
 				</InteractiveHover>
 				<InteractiveHover>
@@ -100,7 +98,7 @@
 						class="bg-transparent border-2 border-white text-white hover:bg-white/20 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
 						on:click={() => goto('/sell')}
 					>
-						Sell With Us
+						{$t('home.heroSellButton')}
 					</button>
 				</InteractiveHover>
 			</div>
@@ -111,7 +109,7 @@
 
 	<!-- ───────────────────── Property-search form ───────────────────── -->
 	<section id="search-section" class="py-16 px-4 bg-white">
-		<h2 class="text-center text-3xl font-bold mb-8 text-muted-blue">Search Properties</h2>
+		<h2 class="text-center text-3xl font-bold mb-8 text-muted-blue">{$t('home.searchSectionTitle')}</h2>
 
 		<div class="max-w-5xl mx-auto bg-gray-50 p-6 sm:p-8 rounded-lg shadow-lg">
 			<form
@@ -120,11 +118,11 @@
 			>
 				<!-- Location -->
 				<div class="lg:col-span-1">
-					<label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+					<label for="location" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.location')}</label>
 					<input
 						id="location"
 						type="text"
-						placeholder="Enter city, neighborhood…"
+						placeholder={$t('home.search.locationPlaceholder')}
 						bind:value={searchLocation}
 						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
 					/>
@@ -132,7 +130,7 @@
 
 				<!-- Property type -->
 				<div class="lg:col-span-1">
-					<label for="property-type" class="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+					<label for="property-type" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.propertyType')}</label>
 					<select
 						id="property-type"
 						bind:value={searchPropertyType}

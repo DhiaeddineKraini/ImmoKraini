@@ -5,6 +5,7 @@
     import { AlertCircle, CheckCircle } from 'lucide-svelte';
     import type { Agent } from '@prisma/client'; 
     import { onDestroy } from 'svelte';
+    import { t } from '$lib/i18n/i18n.js'; // Import translation store
 
     export let data: PageData; 
     export let form: ActionData & { 
@@ -169,15 +170,14 @@
 
 </script>
 
-<!-- Template remains the same, using bind:value={variableName} -->
 <svelte:head>
-    <title>Edit: {title} | ImmoKraini Admin</title> 
+    <title>{$t('admin.editProperty.metaTitle')}</title>
 </svelte:head>
 
 <div class="max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-lg shadow-md">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Property</h1>
-        <a href="/admin/properties" class="text-sm text-brand-blue hover:underline">← Back to List</a>
+        <h1 class="text-2xl font-bold mb-6 text-muted-blue">{$t('admin.editProperty.title')}</h1>
+        <a href="/admin/properties" class="text-sm text-brand-blue hover:underline">← {$t('admin.editProperty.backToList')}</a>
     </div>
     
     {#if submissionError}
@@ -189,73 +189,116 @@
     {#if submissionSuccess} 
         <div class="feedback success">
             <CheckCircle class="w-5 h-5 flex-shrink-0" />
-            <span>Property "{updatedTitle}" updated successfully!</span>
+            <span>{$t('admin.editProperty.success', { title: updatedTitle })}</span>
         </div>
     {/if}
 
     <form method="POST" use:enhance={handleSubmit} enctype="multipart/form-data" class="space-y-4">
         
-        <div> <label for="title" class="label">Title *</label> <input type="text" id="title" name="title" required class="form-input" bind:value={title} disabled={isSubmitting}> </div>
-        <div> <label for="slug" class="label">Slug *</label> <input type="text" id="slug" name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" title="lowercase-letters-numbers-hyphens" class="form-input" bind:value={slug} disabled={isSubmitting}> </div>
-        <div> <label for="address" class="label">Address *</label> <input type="text" id="address" name="address" required class="form-input" bind:value={address} disabled={isSubmitting}> </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div> <label for="price" class="label">Price (TND) *</label> <input type="number" id="price" name="price" required min="0" class="form-input" bind:value={price} disabled={isSubmitting}> </div>
-            <div> <label for="beds" class="label">Beds</label> <input type="number" id="beds" name="beds" min="0" class="form-input" bind:value={beds} disabled={isSubmitting}> </div>
-            <div> <label for="baths" class="label">Baths</label> <input type="number" id="baths" name="baths" min="0" class="form-input" bind:value={baths} disabled={isSubmitting}> </div>
+        <div> 
+            <label for="title" class="block text-sm font-medium text-gray-700">{$t('form.titleLabel')}</label> 
+            <input type="text" id="title" name="title" required class="form-input" bind:value={title} disabled={isSubmitting}> 
+        </div>
+        <div> 
+            <label for="slug" class="block text-sm font-medium text-gray-700">{$t('form.slugLabel')}</label> 
+            <input type="text" id="slug" name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" title="lowercase-letters-numbers-hyphens" class="form-input" bind:value={slug} disabled={isSubmitting}> 
+        </div>
+        <div> 
+            <label for="address" class="block text-sm font-medium text-gray-700 mt-4">{$t('form.addressLabel')}</label> 
+            <input type="text" id="address" name="address" required class="form-input" bind:value={address} disabled={isSubmitting}> 
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div> <label for="area" class="label">Area (sqm)</label> <input type="number" id="area" name="area" min="0" class="form-input" bind:value={area} disabled={isSubmitting}> </div>
-            <div> <label for="propertyType" class="label">Property Type</label> <input type="text" id="propertyType" name="propertyType" placeholder="e.g., Villa" class="form-input" bind:value={propertyType} disabled={isSubmitting}> </div>
-            <div> <label for="yearBuilt" class="label">Year Built</label> <input type="number" id="yearBuilt" name="yearBuilt" min="1800" max={new Date().getFullYear() + 5} class="form-input" bind:value={yearBuilt} disabled={isSubmitting}> </div>
+            <div> 
+                <label for="price" class="block text-sm font-medium text-gray-700">{$t('form.priceLabel')}</label> 
+                <input type="number" id="price" name="price" required min="0" class="form-input" bind:value={price} disabled={isSubmitting}> 
+            </div>
+            <div> 
+                <label for="beds" class="block text-sm font-medium text-gray-700">{$t('form.bedsLabel')}</label> 
+                <input type="number" id="beds" name="beds" min="0" class="form-input" bind:value={beds} disabled={isSubmitting}> 
+            </div>
+            <div> 
+                <label for="baths" class="block text-sm font-medium text-gray-700">{$t('form.bathsLabel')}</label> 
+                <input type="number" id="baths" name="baths" min="0" class="form-input" bind:value={baths} disabled={isSubmitting}> 
+            </div>
         </div>
-        <div> <label for="description" class="label">Description</label> <textarea id="description" name="description" rows="5" class="form-textarea" bind:value={description} disabled={isSubmitting}></textarea> </div>
-        <div> <label for="features" class="label">Features (Comma-separated)</label> <input type="text" id="features" name="features" placeholder="e.g., Pool, Garden" class="form-input" bind:value={features} disabled={isSubmitting}> </div>
-        <div> <label for="videoUrl" class="label">Video URL (Embed Link)</label> <input type="url" id="videoUrl" name="videoUrl" placeholder="e.g., https://youtube.com/embed/..." class="form-input" bind:value={videoUrl} disabled={isSubmitting}> </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div> 
+                <label for="area" class="block text-sm font-medium text-gray-700">{$t('form.areaLabel')}</label> 
+                <input type="number" id="area" name="area" min="0" class="form-input" bind:value={area} disabled={isSubmitting}> 
+            </div>
+            <div> 
+                <label for="propertyType" class="block text-sm font-medium text-gray-700">{$t('form.propertyTypeLabel')}</label> 
+                <input type="text" id="propertyType" name="propertyType" placeholder="e.g., Villa" class="form-input" bind:value={propertyType} disabled={isSubmitting}> 
+            </div>
+            <div> 
+                <label for="yearBuilt" class="block text-sm font-medium text-gray-700">{$t('form.yearBuiltLabel')}</label> 
+                <input type="number" id="yearBuilt" name="yearBuilt" min="1800" max={new Date().getFullYear() + 5} class="form-input" bind:value={yearBuilt} disabled={isSubmitting}> 
+            </div>
+        </div>
+        <div> 
+            <label for="description" class="block text-sm font-medium text-gray-700">{$t('form.descriptionLabel')}</label> 
+            <textarea id="description" name="description" rows="5" class="form-textarea" bind:value={description} disabled={isSubmitting}></textarea> 
+        </div>
+        <div> 
+            <label for="features" class="block text-sm font-medium text-gray-700">{$t('form.featuresLabel')}</label> 
+            <input type="text" id="features" name="features" placeholder="e.g., Pool, Garden" class="form-input" bind:value={features} disabled={isSubmitting}> 
+        </div>
+        <div> 
+            <label for="videoUrl" class="block text-sm font-medium text-gray-700">{$t('form.videoUrlLabel')}</label> 
+            <input type="url" id="videoUrl" name="videoUrl" placeholder="e.g., https://youtube.com/embed/..." class="form-input" bind:value={videoUrl} disabled={isSubmitting}> 
+        </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div> <label for="latitude" class="label">Latitude</label> <input type="number" step="any" id="latitude" name="latitude" class="form-input" bind:value={latitude} disabled={isSubmitting}> </div>
-            <div> <label for="longitude" class="label">Longitude</label> <input type="number" step="any" id="longitude" name="longitude" class="form-input" bind:value={longitude} disabled={isSubmitting}> </div>
+            <div> 
+                <label for="latitude" class="block text-sm font-medium text-gray-700">{$t('form.latitudeLabel')}</label> 
+                <input type="number" step="any" id="latitude" name="latitude" class="form-input" bind:value={latitude} disabled={isSubmitting}> 
+            </div>
+            <div> 
+                <label for="longitude" class="block text-sm font-medium text-gray-700">{$t('form.longitudeLabel')}</label> 
+                <input type="number" step="any" id="longitude" name="longitude" class="form-input" bind:value={longitude} disabled={isSubmitting}> 
+            </div>
         </div>
         
         <!-- Agent Dropdown -->
         <div>
-             <label for="agentId" class="label">Assigned Agent</label>
+             <label for="agentId" class="block text-sm font-medium text-gray-700">{$t('form.agentIdLabel')}</label>
              <select id="agentId" name="agentId" class="form-input" bind:value={agentId} disabled={isSubmitting}>
-                 <option value="">-- Select Agent --</option>
+                 <option value="">-- {$t('form.selectAgent')} --</option>
                  {#if data?.agents} 
                      {#each data.agents as agent (agent.id)} <option value={agent.id}>{agent.name}</option> {/each}
-                 {:else} <option disabled>Could not load agents</option> {/if}
+                 {:else} <option disabled>{$t('form.loadAgentsError')}</option> {/if}
              </select>
         </div>
 
         <div class="border-t pt-4 mt-4">
-            <h3 class="text-lg font-medium text-gray-800 mb-3">Manage Images</h3>
+            <h3 class="text-lg font-medium text-gray-800 mb-3">{$t('admin.editProperty.manageImages')}</h3>
             
             <!-- Main Image -->
             <div>
-                <label class="label">Main Image</label>
+                <label class="label">{$t('admin.editProperty.mainImage')}</label>
                 {#if currentImageUrl}
                     <div class="mb-2 flex items-center space-x-2">
                         <img src={currentImageUrl} alt="Main property image" class="h-20 w-20 object-cover rounded-md border" />
-                        <a href={currentImageUrl} target="_blank" class="text-xs text-brand-blue hover:underline">View</a>
-                        <button type="button" on:click={() => toggleImageForDeletion(currentImageUrl)} 
-                                class:selectedForDeletion={imagesToDelete.has(currentImageUrl)}
-                                class="text-xs px-2 py-1 rounded-md border hover:bg-red-50 
-                                       {imagesToDelete.has(currentImageUrl) ? 'bg-red-100 text-red-700 border-red-300' : 'bg-white text-gray-600 border-gray-300'}">
-                            {imagesToDelete.has(currentImageUrl) ? 'Undo Delete' : 'Delete Main Image'}
-                        </button>
-                    </div>
+                        <a href={currentImageUrl} target="_blank" class="text-xs text-brand-blue hover:underline">{$t('admin.editProperty.view')}</a>
+                    <button type="button" 
+                                    on:click={() => toggleImageForDeletion(currentImageUrl)} 
+                                    class:selectedForDeletion={imagesToDelete.has(currentImageUrl)}
+                                    class="text-xs px-2 py-1 rounded-md border hover:bg-red-50 
+                                           {imagesToDelete.has(currentImageUrl) ? 'bg-red-100 text-red-700 border-red-300' : 'bg-white text-gray-600 border-gray-300'}">
+                                {imagesToDelete.has(currentImageUrl) ? 'Undo Delete' : 'Delete Main Image'}
+                    </button>
+                        </div>
                 {/if}
                 <div>
-                    <label for="newMainImageFile" class="label text-sm">{currentImageUrl ? 'Upload New to Replace' : 'Upload Main Image'}</label>
+                    <label for="newMainImageFile" class="label text-sm">{currentImageUrl ? $t('admin.editProperty.replaceMainImage') : $t('admin.editProperty.uploadMainImage')}</label>
                     <input type="file" id="newMainImageFile" name="newMainImageFile" accept="image/*" class="file-input text-sm" disabled={isSubmitting}>
                 </div>
             </div>
 
             <!-- Gallery Images -->
             <div class="mt-4">
-                <label class="label">Gallery Images</label>
+                <label class="label">{$t('admin.editProperty.galleryImages')}</label>
                 {#if currentGalleryImages.length > 0}
-                    <p class="text-xs text-gray-500 mb-2">Current gallery ({currentGalleryImages.length} images). Click an image to mark for deletion.</p>
+                    <p class="text-xs text-gray-500 mb-2">{$t('admin.editProperty.currentGallery', { count: currentGalleryImages.length })}. {$t('admin.editProperty.clickImageToDelete')}</p>
                     <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-3">
                         {#each currentGalleryImages as imageUrl, index (imageUrl)}
                             <div class="relative group">
@@ -277,13 +320,13 @@
                 
                 <!-- Staging area for New Gallery Images -->
                 <div class="mt-3">
-                    <label for="newGalleryImageFilesInput" class="label text-sm">Add New Gallery Images</label>
+                    <label for="newGalleryImageFilesInput" class="label text-sm">{$t('admin.editProperty.addNewGalleryImages')}</label>
                     <input type="file" id="newGalleryImageFilesInput" accept="image/*" multiple class="file-input text-sm" on:change={handleNewGalleryFilesSelect} disabled={isSubmitting}>
                 </div>
 
                 {#if stagedNewGalleryFiles.length > 0}
                     <div class="mt-3 pt-3 border-t border-gray-200">
-                        <p class="text-xs font-medium text-gray-700 mb-2">Selected new images for gallery ({stagedNewGalleryFiles.length}):</p>
+                        <p class="text-xs font-medium text-gray-700 mb-2">{$t('admin.editProperty.selectedNewImages', { count: stagedNewGalleryFiles.length })}:</p>
                         <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-3">
                             {#each stagedNewGalleryFiles as stagedFile (stagedFile.id)}
                                 <div class="relative group">
@@ -306,8 +349,8 @@
 
         <div class="pt-4">
             <button type="submit" disabled={isSubmitting} class="w-full bg-brand-orange text-gray-900 font-semibold py-2.5 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-orange disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center">
-                 {#if isSubmitting} <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> Updating...
-                {:else} Update Property {/if}
+                 {#if isSubmitting} <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> {$t('admin.editProperty.updating')}
+                {:else} {$t('admin.editProperty.updateProperty')} {/if}
             </button>
         </div>
 
@@ -323,8 +366,4 @@
     .feedback { @apply mb-4 p-3 rounded-md text-sm border flex items-center gap-2; }
     .feedback.error { @apply bg-red-100 text-red-700 border-red-300; }
     .feedback.success { @apply bg-green-100 text-green-700 border-green-300; }
-
-    .selectedForDeletion {
-        @apply bg-red-100 text-red-700 border-red-300 hover:bg-red-200;
-    }
 </style>
