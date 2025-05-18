@@ -4,6 +4,8 @@
     import PropertyCard from '$lib/components/PropertyCard.svelte';
     import { goto } from '$app/navigation';
     import { invalidateAll } from '$app/navigation';
+    import { t } from'$lib/i18n/i18n.js'; // Import translation store
+
 
     export let data: PageData;
     
@@ -15,14 +17,26 @@
     $: minBaths = $page.url.searchParams.get('minBaths') || '';
     $: sortValue = `${searchCriteria.sortBy}-${searchCriteria.sortOrder}`;
 
-    // Reactive statement to format criteria string
+    // Reactive statement to format criteria string (translated)
     $: criteriaString = [
-        searchCriteria.location ? `Location: "${searchCriteria.location}"` : '',
-        searchCriteria.type ? `Type: ${searchCriteria.type}` : '',
-        searchCriteria.minPrice ? `Min Price: ${searchCriteria.minPrice}` : '',
-        searchCriteria.maxPrice ? `Max Price: ${searchCriteria.maxPrice}` : '',
-        searchCriteria.minBeds ? `Min Beds: ${searchCriteria.minBeds}` : '',
-        searchCriteria.minBaths ? `Min Baths: ${searchCriteria.minBaths}` : ''
+        searchCriteria.location
+            ? $t('criteria.location', { location: searchCriteria.location })
+            : '',
+        searchCriteria.type
+            ? $t('criteria.type', { type: searchCriteria.type })
+            : '',
+        searchCriteria.minPrice
+            ? $t('criteria.minPrice', { minPrice: searchCriteria.minPrice })
+            : '',
+        searchCriteria.maxPrice
+            ? $t('criteria.maxPrice', { maxPrice: searchCriteria.maxPrice })
+            : '',
+        searchCriteria.minBeds
+            ? $t('criteria.minBeds', { minBeds: searchCriteria.minBeds })
+            : '',
+        searchCriteria.minBaths
+            ? $t('criteria.minBaths', { minBaths: searchCriteria.minBaths })
+            : ''
     ].filter(Boolean).join(', ');
 
     // Function to update search parameters
@@ -82,30 +96,30 @@
 </script>
 
 <div class="container mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-6 text-muted-blue">Property Search Results</h1>
+    <h1 class="text-3xl font-bold mb-6 text-muted-blue">{ $t('propertySearchResults') }</h1>
 
     <!-- Display Search Criteria -->
     <div class="bg-sky-blue/10 p-4 rounded mb-8 text-sm border border-sky-blue/30">
         {#if criteriaString}
-            <p>Showing results for: <strong class="font-medium">{criteriaString}</strong></p>
+            <p>{ $t('showingResultsFor') }: <strong class="font-medium">{criteriaString}</strong></p>
         {:else}
-            <p>Showing all properties.</p>
+            <p>{ $t('showingAllProperties') }</p>
         {/if}
-        <a href="/#search-section" class="text-brand-blue hover:underline text-xs mt-1 inline-block">Modify Search</a>
+        <a href="/#search-section" class="text-brand-blue hover:underline text-xs mt-1 inline-block">{ $t('modifySearch') }</a>
     </div>
 
     <!-- Advanced Filters -->
     <div class="mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Beds Filter -->
         <div>
-            <label for="minBeds" class="block text-sm font-medium text-gray-700 mb-1">Min Bedrooms</label>
+            <label for="minBeds" class="block text-sm font-medium text-gray-700 mb-1">{ $t('minBedrooms') }</label>
             <select
                 id="minBeds"
                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
                 value={minBeds}
                 on:change={(e) => handleFilterChange('minBeds', e.currentTarget.value)}
             >
-                <option value="">Any</option>
+                <option value="">{ $t('any') }</option>
                 {#each [1, 2, 3, 4, 5, 6] as num}
                     <option value={num.toString()}>{num}+</option>
                 {/each}
@@ -114,14 +128,14 @@
 
         <!-- Baths Filter -->
         <div>
-            <label for="minBaths" class="block text-sm font-medium text-gray-700 mb-1">Min Bathrooms</label>
+            <label for="minBaths" class="block text-sm font-medium text-gray-700 mb-1">{ $t('minBathrooms') }</label>
             <select
                 id="minBaths"
                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
                 value={minBaths}
                 on:change={(e) => handleFilterChange('minBaths', e.currentTarget.value)}
             >
-                <option value="">Any</option>
+                <option value="">{ $t('any') }</option>
                 {#each [1, 2, 3, 4, 5] as num}
                     <option value={num.toString()}>{num}+</option>
                 {/each}
@@ -130,7 +144,7 @@
 
         <!-- Sort Options -->
         <div>
-            <label for="sortBy" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+            <label for="sortBy" class="block text-sm font-medium text-gray-700 mb-1">{ $t('sortBy') }</label>
             <select
                 id="sortBy"
                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
@@ -140,11 +154,11 @@
                     handleSort(sortBy);
                 }}
             >
-                <option value="createdAt-desc">Newest First</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="area-desc">Largest Area</option>
-                <option value="area-asc">Smallest Area</option>
+                <option value="createdAt-desc">{ $t('newestFirst') }</option>
+                <option value="price-asc">{ $t('priceLowToHigh') }</option>
+                <option value="price-desc">{ $t('priceHighToLow') }</option>
+                <option value="area-desc">{ $t('largestArea') }</option>
+                <option value="area-asc">{ $t('smallestArea') }</option>
             </select>
         </div>
     </div>
@@ -177,7 +191,7 @@
                     disabled={pagination.currentPage === 1}
                     on:click={() => goToPage(pagination.currentPage - 1)}
                 >
-                    Previous
+                    { $t('previous') }
                 </button>
 
                 {#each Array(pagination.totalPages) as _, i}
@@ -195,19 +209,19 @@
                     disabled={pagination.currentPage === pagination.totalPages}
                     on:click={() => goToPage(pagination.currentPage + 1)}
                 >
-                    Next
+                    { $t('next') }
                 </button>
             </div>
         {/if}
     {:else}
         <!-- No Results Message -->
         <div class="text-center py-16 px-6 bg-gray-50 rounded-lg shadow">
-            <h2 class="text-xl font-semibold text-gray-700 mb-2">No Properties Found</h2>
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">{ $t('noPropertiesFound') }</h2>
             <p class="text-gray-500">
-                We couldn't find any properties matching your search criteria. Try adjusting your filters or
+                { $t('noPropertiesMessage') }
                 <a href="/properties/search" class="text-brand-blue hover:underline" on:click|preventDefault={() => {
                     window.location.href = '/properties/search';
-                }}>view all properties</a>.
+                }}>{ $t('viewAllProperties') }</a>.
             </p>
         </div>
     {/if}

@@ -30,7 +30,7 @@
 
         // Client-side validation
         if (!name || !email || !message) {
-            submissionError = 'Please fill in required fields (Name, Email, Message).';
+            submissionError = $t('form.error.required');
             submitting = false;
             cancel(); // Use the provided cancel function
             return;
@@ -42,9 +42,9 @@
                 name = ''; email = ''; subject = ''; message = ''; // Clear form
             } else if (result.type === 'failure') {
                 // Use the specific error key we defined in the action
-                submissionError = result.data?.contactError || 'Submission failed.'; 
+                submissionError = result.data?.contactError || $t('form.error.failed'); 
             } else if (result.type === 'error') {
-                submissionError = result.error.message || 'An unexpected error occurred.';
+                submissionError = result.error.message || $t('form.error.unexpected');
             }
             submitting = false;
         };
@@ -55,8 +55,8 @@
 {#if submissionSuccess}
 	<div class="text-center p-6 bg-green-100 rounded-md border border-green-300">
         <CheckCircle class="w-12 h-12 text-green-600 mx-auto mb-3" />
-		<h3 class="text-lg font-medium text-green-800 mb-2">Message Sent!</h3>
-		<p class="text-green-700">Thank you for contacting us. We'll get back to you soon.</p>
+		<h3 class="text-lg font-medium text-green-800 mb-2">{$t('form.successTitle')}</h3>
+		<p class="text-green-700">{$t('form.successBody')}</p>
 	</div>
 {:else}
     <!-- Add method="POST" and use:enhance -->

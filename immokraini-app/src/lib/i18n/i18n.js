@@ -40,7 +40,8 @@ function translate(locale, key, vars = {}) {
 
   // Replace any passed-in variables in the translation string
   Object.keys(vars).forEach((k) => {
-    const regex = new RegExp(`{{${k}}}`, "g");
+    // Fix: match {minBeds} not {{minBeds}}
+    const regex = new RegExp(`{${k}}`, "g");
     text = text.replace(regex, vars[k]);
   });
 
