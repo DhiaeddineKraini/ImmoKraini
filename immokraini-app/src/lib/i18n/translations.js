@@ -1,5 +1,6 @@
 export default {
   en: {
+    "nav.language": "Language:",
     "nav.home": "Home",
     "nav.properties": "Properties",
     "nav.sell": "Sell",
@@ -191,6 +192,7 @@ export default {
 
   },
   fr: {
+    "nav.language": "Langue:",
     "nav.home": "Accueil",
     "nav.properties": "Propriétés",
     "nav.sell": "Vendre",
