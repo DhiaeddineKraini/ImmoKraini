@@ -4,6 +4,7 @@
     import { invalidateAll } from '$app/navigation';
     import type { PageData, ActionData } from './$types'; 
     import { AlertCircle, CheckCircle } from 'lucide-svelte';
+    import { t } from '$lib/i18n/i18n.js'; // Import translation store
 
     export let data: PageData; 
     export let form: ActionData & {
@@ -68,13 +69,13 @@
 </script>
 
 <svelte:head>
-    <title>Edit Staff: {name} | ImmoKraini Admin</title> 
+    <title>{$t('admin.staff.editTitle')}: {name} | ImmoKraini Admin</title> 
 </svelte:head>
 
 <div class="max-w-xl mx-auto bg-white p-6 md:p-8 rounded-lg shadow-md">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Staff Member</h1>
-        <a href="/admin/staff" class="text-sm text-brand-blue hover:underline">← Back to Staff List</a>
+        <h1 class="text-2xl font-bold text-gray-800">{$t('admin.staff.editTitle')}</h1>
+        <a href="/admin/staff" class="text-sm text-brand-blue hover:underline">{$t('admin.staff.back')}</a>
     </div>
     
     {#if submissionError}
@@ -87,33 +88,33 @@
     {#if submissionSuccess}
         <div class="feedback success">
             <CheckCircle class="w-5 h-5 flex-shrink-0" />
-            <span>Staff member "{name}" updated successfully!</span>
+            <span>{$t('admin.staff.editSuccess', { name })}</span>
         </div>
     {/if}
     
     <form method="POST" use:enhance={handleSubmit} enctype="multipart/form-data" class="space-y-4">
         
         <div>
-            <label for="name" class="label">Name *</label>
+            <label for="name" class="label">{$t('admin.staff.name')}</label>
             <input type="text" id="name" name="name" required class="form-input" bind:value={name} disabled={isSubmitting}>
         </div>
         <div>
-            <label for="email" class="label">Email *</label>
+            <label for="email" class="label">{$t('admin.staff.email')}</label>
             <input type="email" id="email" name="email" required class="form-input" bind:value={email} disabled={isSubmitting}>
         </div>
          <div>
-            <label for="phone" class="label">Phone</label>
+            <label for="phone" class="label">{$t('admin.staff.phone')}</label>
             <input type="tel" id="phone" name="phone" class="form-input" bind:value={phone} disabled={isSubmitting}>
         </div>
         
         <!-- Image Upload -->
          <div class="border-t pt-4 mt-4">
-             <label for="imageUrl" class="label">Profile Photo (Upload new to replace)</label>
+             <label for="imageUrl" class="label">{$t('admin.staff.photo')}</label>
              <div class="flex items-center gap-4">
                  {#if currentImageUrl}
                     <img src={currentImageUrl} alt="Current photo" class="w-16 h-16 rounded-full object-cover flex-shrink-0">
                  {:else}
-                    <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No Photo</div>
+                    <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">{$t('admin.staff.noPhoto')}</div>
                  {/if}
                  <input type="file" id="imageUrl" name="imageUrl" accept="image/*" class="file-input flex-grow" disabled={isSubmitting}>
                  <input type="hidden" name="currentImageUrl" value={currentImageUrl} /> 
@@ -128,9 +129,9 @@
             >
                  {#if isSubmitting} 
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> 
-                    Updating...
+                    {$t('admin.staff.updating')}
                 {:else} 
-                    Update Staff Member 
+                    {$t('admin.staff.update')} 
                 {/if}
             </button>
         </div>

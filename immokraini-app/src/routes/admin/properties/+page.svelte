@@ -4,6 +4,7 @@
     import { enhance } from '$app/forms';
     import { invalidateAll } from '$app/navigation';
     import { Plus, Trash2, Edit, AlertCircle, CheckCircle, Star, XCircle } from 'lucide-svelte'; // Added Star, XCircle
+    import { t } from '$lib/i18n/i18n.js'; // Import translation store
 
     export let data: PageData; 
     
@@ -46,34 +47,32 @@
             default:
                 return defaultMessage;
         }
-    }
-
-    // Confirmation dialog function for delete
+    }    // Confirmation dialog function for delete
     function confirmDelete(event: Event) {
         const formElement = event.currentTarget as HTMLFormElement;
         const propertyTitle = formElement.dataset.propertyTitle || 'this property';
-        if (!window.confirm(`Are you sure you want to delete "${propertyTitle}"? This cannot be undone.`)) {
+        if (!window.confirm($t('admin.properties.confirmDelete', { propertyTitle }))) {
             event.preventDefault(); 
         }
     }
 </script>
 
 <svelte:head>
-    <title>Manage Properties | ImmoKraini Admin</title>
+    <title>{$t('admin.properties.manageProperties')} | ImmoKraini Admin</title>
 </svelte:head>
 
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Manage Properties</h1>
+    <h1 class="text-2xl font-bold text-gray-800">{$t('admin.properties.manageProperties')}</h1>
     <a href="/admin/add-property" class="inline-flex items-center bg-brand-blue text-white font-semibold py-2 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out text-sm">
-        <Plus class="w-4 h-4 mr-2" /> Add New Property
+        <Plus class="w-4 h-4 mr-2" /> {$t('admin.properties.addNew')}
     </a>
 </div>
 
 <!-- Feedback Messages -->
-{#if form?.deleteError} <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>Error deleting: {form.deleteError}</span></div> {/if}
-{#if form?.deleteSuccess} <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>"{form.deletedTitle}" deleted.</span></div> {/if}
-{#if form?.toggleError} <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>Error updating featured status: {form.toggleError}</span></div> {/if}
-{#if form?.toggleSuccess} <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>"{form.updatedTitle}" featured status set to: {form.updatedStatus ? 'Featured' : 'Not Featured'}.</span></div> {/if}
+{#if form?.deleteError} <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>{$t('admin.properties.errorDeleting', { error: form.deleteError })}</span></div> {/if}
+{#if form?.deleteSuccess} <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>{$t('admin.properties.deleteSuccess', { title: form.deletedTitle })}</span></div> {/if}
+{#if form?.toggleError} <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>{$t('admin.properties.errorTogglingFeatured', { error: form.toggleError })}</span></div> {/if}
+{#if form?.toggleSuccess} <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>{$t('admin.properties.toggledFeatured', { title: form.updatedTitle, status: form.updatedStatus })}</span></div> {/if}
 <!-- End Feedback Messages -->
 
 
@@ -81,12 +80,12 @@
     <table class="w-full min-w-[700px] text-sm text-left text-gray-600">
         <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b">
             <tr>
-                <th scope="col" class="px-4 py-3">Title</th>
-                <th scope="col" class="px-4 py-3">Type</th>
-                <th scope="col" class="px-4 py-3">Price (TND)</th>
-                <th scope="col" class="px-4 py-3">Featured</th> 
-                <th scope="col" class="px-4 py-3">Status</th>
-                <th scope="col" class="px-4 py-3 text-right">Actions</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.properties.titleCol')}</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.properties.typeCol')}</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.properties.priceCol')}</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.properties.featuredCol')}</th> 
+                <th scope="col" class="px-4 py-3">{$t('admin.properties.statusCol')}</th>
+                <th scope="col" class="px-4 py-3 text-right">{$t('admin.properties.actionsCol')}</th>
             </tr>
         </thead>
         <tbody>
@@ -96,20 +95,19 @@
                         <a href={`/properties/${property.slug}`} target="_blank" class="hover:underline" title="View on site">
                             {property.title}
                         </a>
-                    </th>
-                    <td class="px-4 py-3">{property.propertyType || '-'}</td>
+                    </th>                    <td class="px-4 py-3">{property.propertyType || '-'}</td>
                     <td class="px-4 py-3">{property.price.toLocaleString('fr-TN')}</td>
                     <td class="px-4 py-3"> 
                         {#if property.isFeatured}
                             <span class="text-yellow-500 inline-flex items-center font-medium">
-                                <Star class="w-4 h-4 mr-1 fill-current"/> Yes
+                                <Star class="w-4 h-4 mr-1 fill-current"/> {$t('admin.properties.featured')}
                             </span>
                         {:else}
-                            <span class="text-gray-400">No</span>
+                            <span class="text-gray-400">{$t('admin.properties.notFeatured')}</span>
                         {/if}
                     </td>
                     <td class="px-4 py-3">
-                        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded border border-green-400">Published</span> 
+                        <span class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded border border-green-400">{$t('admin.properties.published')}</span> 
                     </td>
                     <td class="px-4 py-3 text-right space-x-1 whitespace-nowrap"> 
                         
@@ -126,8 +124,7 @@
                         >
                             <input type="hidden" name="propertyId" value={property.id} />
                           
-                            <input type="hidden" name="currentFeaturedState" value={property.isFeatured.toString()} /> 
-                            <button 
+                            <input type="hidden" name="currentFeaturedState" value={property.isFeatured.toString()} />                            <button 
                                 type="submit" 
                                 class="inline-flex items-center p-1 text-xs rounded" 
                                 class:text-yellow-600={!property.isFeatured} 
@@ -136,7 +133,7 @@
                                 class:text-gray-400={property.isFeatured} 
                                 class:hover:text-gray-600={property.isFeatured}
                                 class:hover:bg-gray-100={property.isFeatured}
-                                title={property.isFeatured ? 'Remove from Featured' : 'Add to Featured'}
+                                title={property.isFeatured ? $t('admin.properties.removeFromFeatured') : $t('admin.properties.addToFeatured')}
                             >
                                 {#if property.isFeatured}
                                     <XCircle class="w-4 h-4" /> 
@@ -147,7 +144,7 @@
                         </form>
 
                         <!-- Edit Button -->
-                        <a href={`/admin/properties/edit/${property.id}`} class="text-blue-600 hover:text-blue-800 inline-flex items-center p-1 align-middle" title="Edit">
+                        <a href={`/admin/properties/edit/${property.id}`} class="text-blue-600 hover:text-blue-800 inline-flex items-center p-1 align-middle" title={$t('general.edit')}>
                             <Edit class="w-4 h-4" />
                         </a>
 
@@ -163,9 +160,8 @@
                             class="inline-block align-middle"
                             on:submit={confirmDelete} 
                             data-property-title={property.title} 
-                        >
-                            <input type="hidden" name="propertyId" value={property.id} />
-                            <button type="submit" class="text-red-600 hover:text-red-800 inline-flex items-center p-1" title="Delete">
+                        >                            <input type="hidden" name="propertyId" value={property.id} />
+                            <button type="submit" class="text-red-600 hover:text-red-800 inline-flex items-center p-1" title={$t('general.delete')}>
                                 <Trash2 class="w-4 h-4" />
                             </button>
                         </form>
@@ -173,7 +169,7 @@
                 </tr>
             {:else}
                 <tr>
-                    <td colspan="6" class="text-center py-8 text-gray-500">No properties found.</td> 
+                    <td colspan="6" class="text-center py-8 text-gray-500">{$t('admin.properties.noProperties')}</td> 
                 </tr>
             {/each}
         </tbody>

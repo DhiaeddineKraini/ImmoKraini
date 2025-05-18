@@ -3,8 +3,9 @@
     import { enhance } from '$app/forms';
     import type { ActionData } from './$types'; 
     import { AlertCircle, CheckCircle } from 'lucide-svelte';
+    import { t } from '$lib/i18n/i18n.js'; // Import translation store
 
-    export let form: ActionData; 
+    export let form: ActionData;
 
     // Feedback state
     let isSubmitting = false; 
@@ -41,40 +42,40 @@
 </script>
 
 <svelte:head>
-    <title>Add New Staff | ImmoKraini Admin</title>
+    <title>{$t('admin.staff.addTitle')} | ImmoKraini Admin</title>
 </svelte:head>
 
 <div class="max-w-xl mx-auto bg-white p-6 md:p-8 rounded-lg shadow-md">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Add New Staff Member</h1>
-        <a href="/admin/staff" class="text-sm text-brand-blue hover:underline">← Back to Staff List</a>
+        <h1 class="text-2xl font-bold text-gray-800">{$t('admin.staff.addTitle')}</h1>
+        <a href="/admin/staff" class="text-sm text-brand-blue hover:underline">{$t('admin.staff.back')}</a>
     </div>
 
     {#if submissionError}
-        <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>Error: {submissionError}</span></div>
+        <div class="feedback error"><AlertCircle class="w-5 h-5 flex-shrink-0" /><span>{$t('admin.staff.error', { error: submissionError })}</span></div>
     {/if}
     {#if submissionSuccess}
-        <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>Staff member "{addedName}" added successfully!</span></div>
+        <div class="feedback success"><CheckCircle class="w-5 h-5 flex-shrink-0" /><span>{$t('admin.staff.addSuccess', { name: addedName })}</span></div>
     {/if}
 
     <form method="POST" use:enhance={handleSubmit} enctype="multipart/form-data" class="space-y-4" on:input={clearMessages}>
         
         <div>
-            <label for="name" class="label">Name *</label>
+            <label for="name" class="label">{$t('admin.staff.name')}</label>
             <input type="text" id="name" name="name" required class="form-input" disabled={isSubmitting} value={form?.name ?? ''}>
         </div>
         <div>
-            <label for="email" class="label">Email *</label>
+            <label for="email" class="label">{$t('admin.staff.email')}</label>
             <input type="email" id="email" name="email" required class="form-input" disabled={isSubmitting} value={form?.email ?? ''}>
         </div>
         <div>
-            <label for="phone" class="label">Phone</label>
+            <label for="phone" class="label">{$t('admin.staff.phone')}</label>
             <input type="tel" id="phone" name="phone" class="form-input" disabled={isSubmitting} value={form?.phone ?? ''}>
         </div>
         
         <!-- Image Upload -->
         <div>
-            <label for="imageUrl" class="label">Profile Photo (Optional)</label>
+            <label for="imageUrl" class="label">{$t('admin.staff.photo')}</label>
             <input type="file" id="imageUrl" name="imageUrl" accept="image/*" class="file-input" disabled={isSubmitting}>
         </div>
 
@@ -86,9 +87,9 @@
             >
                 {#if isSubmitting} 
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path> </svg> 
-                    Adding...
+                    {$t('admin.staff.adding')}
                 {:else} 
-                    Add Staff Member 
+                    {$t('admin.staff.add')} 
                 {/if}
             </button>
         </div>
