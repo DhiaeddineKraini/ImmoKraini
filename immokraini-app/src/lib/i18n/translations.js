@@ -85,6 +85,9 @@ export default {
     "saved.noneBody": "Click the heart icon on any property listing to save it here for later.",
     "saved.browse": "Browse Properties",
     "saved.errorTitle": "Oops!",
+    "saved.intro": "You have",
+"saved.singular": "property saved.",
+"saved.plural": "properties saved.",
     // Property Card
     "property.beds": "Bed",
     "property.beds_plural": "Beds",
@@ -274,11 +277,14 @@ export default {
     // Saved Properties
     "saved.title": "Vos propriétés sauvegardées",
     "saved.loading": "Chargement de vos propriétés sauvegardées...",
-    "saved.count": "Vous avez <strong>{count}</strong> {count, select, 1 {propriété} other {propriétés}} sauvegardées.",
+    "saved.count": "Vous avez <strong>{count}</strong> {count, select, 1 {propriété sauvegardée} other {propriétés sauvegardées}}.",
     "saved.noneTitle": "Aucune propriété sauvegardée",
     "saved.noneBody": "Cliquez sur l'icône cœur sur une annonce pour la sauvegarder ici.",
     "saved.browse": "Voir les propriétés",
     "saved.errorTitle": "Oups !",
+    "saved.intro": "Vous avez",
+"saved.singular": "propriété sauvegardée.",
+"saved.plural": "propriétés sauvegardées.",
     // Property Card
     "property.beds": "Chamb",
     "property.beds_plural": "Chambres",

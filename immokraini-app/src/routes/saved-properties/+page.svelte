@@ -102,6 +102,10 @@
             <p>{errorMessage}</p>
         </div>
     {:else if savedPropertiesDetails.length > 0}
+        <p class="mb-6 text-gray-700">
+            {$t('saved.intro')} <strong>{savedPropertiesDetails.length}</strong> 
+            {$t(savedPropertiesDetails.length === 1 ? 'saved.singular' : 'saved.plural')}
+        </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {#each savedPropertiesDetails as property (property.id)}
                 <div class="h-full"> 
