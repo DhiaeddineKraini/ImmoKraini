@@ -4,8 +4,16 @@
     import { onDestroy, onMount } from 'svelte';
     import savedPropertyIdsStore from '$lib/stores/favoritesStore';
     import PropertyCard from '$lib/components/PropertyCard.svelte';
-	import L from 'leaflet';
-    import { t } from '$lib/i18n/i18n.js'; // Import translation store
+    import { browser } from '$app/environment';
+        import { t } from '$lib/i18n/i18n.js'; // Import translation function
+
+    // Safe Leaflet import - only loaded in browser
+    let L;
+    onMount(async () => {
+        if (browser) {
+            L = (await import('leaflet')).default;
+        }
+    });
                                           // We need an API endpoint or load all via PageData
 
     // --- Corrected Approach: Fetch data for saved properties ---
@@ -80,7 +88,7 @@
 
 
 <svelte:head>
-    <title>{$t('saved.metaTitle')}</title>
+    <title>{$t('saved.title')} | ImmoKraini</title>
 </svelte:head>
 
 <div class="container mx-auto px-4 py-12">
@@ -94,7 +102,6 @@
             <p>{errorMessage}</p>
         </div>
     {:else if savedPropertiesDetails.length > 0}
-        <p class="mb-6 text-gray-700">{$t('saved.count', { count: savedPropertiesDetails.length })}</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
             {#each savedPropertiesDetails as property (property.id)}
                 <div class="h-full"> 
@@ -113,6 +120,14 @@
             {/each}
         </div>
     {:else}
-        <p class="text-center text-gray-600 py-16">{$t('saved.empty')}</p>
+        <div class="text-center py-16 px-6 bg-gray-50 rounded-lg shadow">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">{$t('saved.noneTitle')}</h2>
+            <p class="text-gray-500">
+                {$t('saved.noneBody')}
+            </p>
+            <a href="/properties/search" class="mt-6 inline-block bg-brand-blue text-white font-semibold py-2 px-6 rounded-md shadow hover:opacity-90">
+                {$t('saved.browse')}
+            </a>
+        </div>
     {/if}
 </div>
