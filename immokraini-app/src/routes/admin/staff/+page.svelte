@@ -27,6 +27,7 @@
     import { enhance } from '$app/forms';
     import { invalidateAll } from '$app/navigation';
     import { Plus, Edit, Trash2, AlertCircle, CheckCircle } from 'lucide-svelte'; 
+    import { t } from '$lib/i18n/i18n.js'; // Import translation store
 
     export let data: MyPageData;
     export let form: MyActionData;
@@ -36,13 +37,11 @@
     $: deleteErrorCode = form?.deleteErrorCode ?? null;
     $: deleteSuccess = form?.deleteSuccess ?? false;
     $: deletedName = form?.deletedName ?? '';
-    $: unassignedProperties = form?.unassignedProperties ?? 0;
-
-    // Confirmation dialog function for delete
+    $: unassignedProperties = form?.unassignedProperties ?? 0;    // Confirmation dialog function for delete
     function confirmDelete(event: Event) {
         const formElement = event.currentTarget as HTMLFormElement;
         const agentName = formElement.dataset.agentName || 'this staff member';
-        if (!window.confirm(`Are you sure you want to delete "${agentName}"? This will unassign them from any properties.`)) {
+        if (!window.confirm($t('admin.staff.confirmDelete', { name: agentName }))) {
             event.preventDefault(); 
         }
     }
@@ -65,13 +64,13 @@
 </script>
 
 <svelte:head>
-    <title>Manage Staff | ImmoKraini Admin</title>
+    <title>{$t('admin.staff.manageStaff')} | ImmoKraini Admin</title>
 </svelte:head>
 
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Manage Staff / Agents</h1>
+    <h1 class="text-2xl font-bold text-gray-800">{$t('admin.staff.manageStaff')}</h1>
     <a href="/admin/staff/add" class="inline-flex items-center bg-brand-blue text-white font-semibold py-2 px-4 rounded-md shadow hover:opacity-90 transition duration-300 ease-in-out text-sm">
-        <Plus class="w-4 h-4 mr-2" /> Add New Staff
+        <Plus class="w-4 h-4 mr-2" /> {$t('admin.staff.addNew')}
     </a>
 </div>
 
@@ -94,9 +93,9 @@
     <div class="feedback success">
         <CheckCircle class="w-5 h-5 flex-shrink-0" />
         <span>
-            Staff member "{deletedName}" deleted successfully.
+            {$t('admin.staff.deleteSuccess', { name: deletedName })}
             {#if unassignedProperties > 0}
-                {unassignedProperties} {unassignedProperties === 1 ? 'property was' : 'properties were'} unassigned.
+                {$t('admin.staff.unassignedProperties', { count: unassignedProperties })}
             {/if}
         </span>
     </div>
@@ -106,12 +105,12 @@
     <table class="w-full min-w-[600px] text-sm text-left text-gray-600">
         <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b">
             <tr>
-                <th scope="col" class="px-4 py-3">Photo</th>
-                <th scope="col" class="px-4 py-3">Name</th>
-                <th scope="col" class="px-4 py-3">Email</th>
-                <th scope="col" class="px-4 py-3">Phone</th>
-                <th scope="col" class="px-4 py-3">Properties</th>
-                <th scope="col" class="px-4 py-3 text-right">Actions</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.staff.photoCol')}</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.staff.nameCol')}</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.staff.emailCol')}</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.staff.phoneCol')}</th>
+                <th scope="col" class="px-4 py-3">{$t('admin.staff.propertiesCol')}</th>
+                <th scope="col" class="px-4 py-3 text-right">{$t('admin.staff.actionsCol')}</th>
             </tr>
         </thead>
         <tbody>
@@ -153,11 +152,10 @@
                                 <Trash2 class="w-4 h-4" />
                             </button>
                         </form>
-                    </td>
-                </tr>
+                    </td>                </tr>
             {:else}
                 <tr>
-                    <td colspan="6" class="text-center py-8 text-gray-500">No staff members found.</td>
+                    <td colspan="6" class="text-center py-8 text-gray-500">{$t('admin.staff.noStaff')}</td>
                 </tr>
             {/each}
         </tbody>
