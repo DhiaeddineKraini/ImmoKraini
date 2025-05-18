@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Heart } from 'lucide-svelte';
   import savedPropertyIds, { toggleFavorite } from '$lib/stores/favoritesStore';
+  import { t } from '$lib/i18n/i18n.js'; // Import translation store
 
   // ── Props ────────────────────────────────────────────────────────────────────
   export let id: string;
@@ -56,8 +57,8 @@
                {isCurrentlyFavorite
                    ? 'bg-red-100/80 text-red-500 hover:bg-red-200/90'
                    : 'bg-gray-200/70 text-gray-500 hover:bg-gray-300/80 hover:text-red-500'}"
-        aria-label={isCurrentlyFavorite ? 'Remove from favorites' : 'Add to favorites'}
-        title={isCurrentlyFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        aria-label={isCurrentlyFavorite ? $t('property.removeFavorite') : $t('property.addFavorite')}
+        title={isCurrentlyFavorite ? $t('property.removeFavorite') : $t('property.addFavorite')}
       >
         <Heart
           class="w-5 h-5"
@@ -105,7 +106,7 @@
                 d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H5a3 3 0 00-3 3v8a3 3 0 003 3z"
               />
             </svg>
-            {beds} Bed{beds !== 1 ? 's' : ''}
+            {beds} {$t('property.beds')}
           </span>
         {/if}
 
@@ -130,7 +131,7 @@
                 d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"
               />
             </svg>
-            {baths} Bath{baths !== 1 ? 's' : ''}
+            {baths} {$t('property.baths')}
           </span>
         {/if}
       </div>
@@ -151,7 +152,7 @@
               d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
             />
           </svg>
-          {area.toLocaleString()} sqm
+          {area} m²
         </span>
       {/if}
     </div>

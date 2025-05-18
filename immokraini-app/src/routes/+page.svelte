@@ -5,6 +5,7 @@
 	import ContactForm from '$lib/components/ContactForm.svelte';
 	import { goto } from '$app/navigation';
 	import InteractiveHover from './InteractiveHover.svelte';
+	import { t } from'$lib/i18n/i18n.js'; // Import translation store
 	// Removed onMount, onDestroy from 'svelte'
 	// Removed browser from '$app/environment'
 	// Removed Motion One imports
@@ -61,10 +62,10 @@
 </script>
 
 <svelte:head>
-	<title>ImmoKraini | Premier Real Estate Agency in Djerba, Tunisia</title>
+	<title>{$t('home.metaTitle')}</title>
 	<meta
 		name="description"
-		content="Discover exclusive villas, apartments, and land for sale or rent in Djerba with ImmoKraini. Your expert guide to the Djerba property market."
+		content={$t('home.metaDescription')}
 	/>
 </svelte:head>
 
@@ -75,16 +76,13 @@
 		style="background-image: url('/hero-background.jpg');" 
 		aria-label="Hero section with background image" role="banner"
 	>
-	
 		<div class="absolute inset-0 bg-black/30 z-0" aria-hidden="true"></div>
-
-	
 		<div class="relative z-10 text-center p-8 max-w-4xl mx-auto">
 			<h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-				Find Your Dream Home in Djerba 
+				{$t('home.heroTitle')}
 			</h1>
 			<p class="text-lg md:text-xl mb-8 drop-shadow-md">
-				Explore exclusive properties with ImmoKraini, your trusted real estate partner.
+				{$t('home.heroSubtitle')}
 			</p>
 			<div class="flex flex-col sm:flex-row justify-center gap-4">
 				<InteractiveHover>
@@ -92,7 +90,7 @@
 						class="bg-white text-muted-blue hover:bg-gray-100 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
 						on:click={() => document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' })}
 					>
-						Search Properties
+						{$t('home.heroSearchButton')}
 					</button>
 				</InteractiveHover>
 				<InteractiveHover>
@@ -100,7 +98,7 @@
 						class="bg-transparent border-2 border-white text-white hover:bg-white/20 font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out shadow hover:shadow-md"
 						on:click={() => goto('/sell')}
 					>
-						Sell With Us
+						{$t('home.heroSellButton')}
 					</button>
 				</InteractiveHover>
 			</div>
@@ -111,7 +109,7 @@
 
 	<!-- ───────────────────── Property-search form ───────────────────── -->
 	<section id="search-section" class="py-16 px-4 bg-white">
-		<h2 class="text-center text-3xl font-bold mb-8 text-muted-blue">Search Properties</h2>
+		<h2 class="text-center text-3xl font-bold mb-8 text-muted-blue">{$t('home.searchSectionTitle')}</h2>
 
 		<div class="max-w-5xl mx-auto bg-gray-50 p-6 sm:p-8 rounded-lg shadow-lg">
 			<form
@@ -120,11 +118,11 @@
 			>
 				<!-- Location -->
 				<div class="lg:col-span-1">
-					<label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+					<label for="location" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.location')}</label>
 					<input
 						id="location"
 						type="text"
-						placeholder="Enter city, neighborhood…"
+						placeholder={$t('home.search.locationPlaceholder')}
 						bind:value={searchLocation}
 						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
 					/>
@@ -132,25 +130,24 @@
 
 				<!-- Property type -->
 				<div class="lg:col-span-1">
-					<label for="property-type" class="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+					<label for="property-type" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.propertyType')}</label>
 					<select
 						id="property-type"
 						bind:value={searchPropertyType}
 						class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
 					>
-						<option value="">Any</option>
-						<option value="house">House</option>
-						<option value="apartment">Apartment</option>
-						<option value="condo">Condo</option>
-						<option value="land">Land</option>
-						<option value="commercial">Commercial</option>
+						<option value="">{$t('home.search.any')}</option>
+						<option value="house">{$t('home.search.house')}</option>
+						<option value="apartment">{$t('home.search.apartment')}</option>
+						<option value="land">{$t('home.search.land')}</option>
+						<option value="commercial">{$t('home.search.commercial')}</option>
 					</select>
 				</div>
 
 				<!-- Price range -->
 				<div class="grid grid-cols-2 gap-2 lg:col-span-1">
 					<div>
-						<label for="min-price" class="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
+						<label for="min-price" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.minPrice')}</label>
 						<input
 							id="min-price"
 							type="number"
@@ -163,7 +160,7 @@
 					</div>
 
 					<div>
-						<label for="max-price" class="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
+						<label for="max-price" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.maxPrice')}</label>
 						<input
 							id="max-price"
 							type="number"
@@ -179,13 +176,13 @@
 				<!-- Advanced Filters -->
 				<div class="grid grid-cols-2 gap-2 lg:col-span-1">
 					<div>
-						<label for="min-beds" class="block text-sm font-medium text-gray-700 mb-1">Min Beds</label>
+						<label for="min-beds" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.minBeds')}</label>
 						<select
 							id="min-beds"
 							bind:value={searchMinBeds}
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
 						>
-							<option value="">Any</option>
+							<option value="">{$t('home.search.any')}</option>
 							{#each [1, 2, 3, 4, 5, 6] as num}
 								<option value={num}>{num}+</option>
 							{/each}
@@ -193,13 +190,13 @@
 					</div>
 
 					<div>
-						<label for="min-baths" class="block text-sm font-medium text-gray-700 mb-1">Min Baths</label>
+						<label for="min-baths" class="block text-sm font-medium text-gray-700 mb-1">{$t('home.search.minBaths')}</label>
 						<select
 							id="min-baths"
 							bind:value={searchMinBaths}
 							class="w-full rounded-md border-gray-300 shadow-sm focus:border-brand-blue focus:ring focus:ring-brand-blue focus:ring-opacity-50"
 						>
-							<option value="">Any</option>
+							<option value="">{$t('home.search.any')}</option>
 							{#each [1, 2, 3, 4, 5] as num}
 								<option value={num}>{num}+</option>
 							{/each}
@@ -217,10 +214,10 @@
 						{#if isSearching}
 							<span class="flex items-center justify-center">
 								<Loader class="animate-spin w-5 h-5 mr-2" />
-								Searching...
+								{$t('home.search.searching')}
 							</span>
 						{:else}
-							Search
+							{$t('home.search.search')}
 						{/if}
 					</button>
 				</div>
@@ -233,11 +230,11 @@
 	<!-- ─────────────────────── Featured grid ─────────────────────── -->
 	<section id="featured-properties" class="py-16 px-4 bg-gray-100">
 		<div class="container mx-auto">
-			<h2 class="text-center text-3xl font-bold mb-12 text-muted-blue">Featured Properties</h2>
+			<h2 class="text-center text-3xl font-bold mb-12 text-muted-blue">{$t('home.featuredSectionTitle')}</h2>
 
 			{#if featuredLoadError}
 				<p class="text-center text-red-600 bg-red-100 p-4 rounded-md">
-					Error loading featured properties: {featuredLoadError}
+					{$t('home.featuredError')} {featuredLoadError}
 				</p>
 			{:else if featuredProperties.length > 0}
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
@@ -258,7 +255,7 @@
 					{/each}
 				</div>
 			{:else}
-				<p class="text-center text-gray-600">No featured properties available at the moment.</p>
+				<p class="text-center text-gray-600">{$t('home.featuredNone')}</p>
 			{/if}
 
 			<div class="text-center mt-12">
@@ -267,7 +264,7 @@
 						href="/properties/search" 
 						class="group relative inline-flex items-center justify-center text-base rounded-md bg-brand-blue px-8 py-3 font-semibold text-white transition-all duration-200 hover:bg-brand-blue hover:shadow-lg hover:-translate-y-0.5 hover:shadow-brand-blue/30"
 					>
-						View All Properties
+						{$t('home.featured.viewAll')}
 						<svg
 							aria-hidden="true"
 							viewBox="0 0 10 10"
@@ -296,9 +293,9 @@
 	<!-- ================== Why Choose Us Section ================== -->
 	<section id="why-choose-us" class="py-16 px-4 bg-white"> 
 		<div class="container mx-auto text-center">
-			<h2 class="text-3xl font-bold mb-4 text-muted-blue">Why Choose ImmoKraini?</h2>
+			<h2 class="text-3xl font-bold mb-4 text-muted-blue">{$t('home.whySectionTitle')}</h2>
 			<p class="max-w-2xl mx-auto text-gray-600 mb-12">
-				We combine local expertise with modern technology to provide unparalleled real estate service in Djerba.
+				{$t('home.whySectionDetail')}
 			</p>
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 				<!-- Feature Item 1 -->
@@ -306,24 +303,24 @@
 					<div class="bg-sky-blue text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow">
 						<MapPin class="w-8 h-8" />
 					</div>
-					<h3 class="text-xl font-semibold text-gray-800 mb-2">Local Djerba Experts</h3> 
-					<p class="text-gray-600 text-sm">Deep understanding of the Djerba property market, neighborhoods, and culture.</p> 
+					<h3 class="text-xl font-semibold text-gray-800 mb-2">{$t('home.why.localExperts')}</h3> 
+					<p class="text-gray-600 text-sm">{$t('home.why.localExpertsDesc')}</p> 
 				</div>
 				<!-- Feature Item 2 -->
 				<div class="why-item p-6">
 					<div class="bg-brand-blue text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow">
 						<Award class="w-8 h-8" />
 					</div>
-					<h3 class="text-xl font-semibold text-gray-800 mb-2">Personalized Service</h3>
-					<p class="text-gray-600 text-sm">Tailored approach to meet your unique buying, selling, or renting needs.</p>
+					<h3 class="text-xl font-semibold text-gray-800 mb-2">{$t('home.why.personalized')}</h3>
+					<p class="text-gray-600 text-sm">{$t('home.why.personalizedDesc')}</p>
 				</div>
 				<!-- Feature Item 3 -->
 				<div class="why-item p-6">
 					<div class="bg-brand-orange text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow">
 						<Users class="w-8 h-8" />
 					</div>
-					<h3 class="text-xl font-semibold text-gray-800 mb-2">Client-Focused Results</h3>
-					<p class="text-gray-600 text-sm">Dedicated to achieving the best possible outcome for every client we serve.</p>
+					<h3 class="text-xl font-semibold text-gray-800 mb-2">{$t('home.why.clientResults')}</h3>
+					<p class="text-gray-600 text-sm">{$t('home.why.clientResultsDesc')}</p>
 				</div>
 			</div>
 		</div>
@@ -334,10 +331,10 @@
 	<!-- ================== Meet the Team Section ================== -->
 	<section id="meet-the-team" class="py-16 px-4 bg-gray-50"> 
 		<div class="container mx-auto text-center">
-			<h2 class="text-3xl font-bold mb-12 text-muted-blue">Meet Our Team</h2>
+			<h2 class="text-3xl font-bold mb-12 text-muted-blue">{$t('home.teamSectionTitle')}</h2>
 
             {#if pageLoadError}
-                 <p class="text-center text-red-600">Could not load team information.</p>
+                 <p class="text-center text-red-600">{$t('home.team.error')}</p>
             {:else if agents.length > 0} 
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                     {#each agents as member (member.id)} 
@@ -360,7 +357,7 @@
                     {/each}
                 </div>
             {:else}
-                 <p class="text-center text-gray-600">Our team information is currently unavailable.</p>
+                 <p class="text-center text-gray-600">{$t('home.team.none')}</p>
             {/if}
 			<!-- Removed See Full Team Button -->
 		</div>
@@ -375,11 +372,10 @@
 				<!-- Left Column: Text & Info -->
 				<div class="contact-left-col text-center md:text-left">
 					<h2 class="text-3xl font-bold mb-4 text-muted-blue flex items-center justify-center md:justify-start">
-						<Send class="w-7 h-7 mr-3 text-brand-blue" /> Get In Touch
+						<Send class="w-7 h-7 mr-3 text-brand-blue" /> {$t('home.contactSectionTitle')}
 					</h2>
 					<p class="text-gray-700 mb-6 text-lg leading-relaxed">
-						Ready to find your dream property in Djerba or have questions about selling? 
-						Contact our expert team today. We're here to help you every step of the way.
+						{$t('home.contactSectionDesc')}
 					</p>
 					<div class="space-y-3 text-gray-800">
 						<a href="tel:+21675123456" class="flex items-center justify-center md:justify-start group">

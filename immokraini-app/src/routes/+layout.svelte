@@ -2,20 +2,28 @@
 	import '../app.css'; 
 	import Header from '$lib/components/Header.svelte'; 
 	import Footer from '$lib/components/Footer.svelte'; 
-    import { fade } from 'svelte/transition'; // <<< Import fade transition
-    import { page } from '$app/stores'; // <<< Import page store to get current path for key
+    import { fade } from 'svelte/transition'; // Import fade transition
+    import { page } from '$app/stores'; // Import page store to get current path for key
+    import { t, locale } from '$lib/i18n/i18n'; // Import i18n
+    import { initLocale } from '$lib/i18n/localeStorage'; // Import locale initialization
+    import { onMount } from 'svelte';
+    
+    onMount(() => {
+        // Initialize locale from localStorage
+        initLocale();
+    });
 </script>
 
 <svelte:head>
-    <title>ImmoKraini - Djerba Real Estate</title> 
-    <meta name="description" content="Find your perfect property in Djerba, Tunisia with ImmoKraini. Explore listings for villas, apartments, land, and more. Your trusted local real estate experts." />
-    <meta property="og:title" content="ImmoKraini - Djerba Real Estate" />
+    <title>{$t("meta.title")}</title> 
+    <meta name="description" content={$t("meta.description")} />
+    <meta property="og:title" content={$t("meta.title")} />
     <meta property="og:description" content="Your trusted local real estate experts in Djerba, Tunisia." />
     <meta property="og:image" content="/og-image.jpg" /> 
     <meta property="og:url" content="YOUR_WEBSITE_URL" /> 
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ImmoKraini - Djerba Real Estate" />
+    <meta name="twitter:title" content={$t("meta.title")} />
     <meta name="twitter:description" content="Your trusted local real estate experts in Djerba, Tunisia." />
     <meta name="twitter:image" content="/og-image.jpg" /> 
     <link rel="icon" href="/favicon.png" sizes="any" />

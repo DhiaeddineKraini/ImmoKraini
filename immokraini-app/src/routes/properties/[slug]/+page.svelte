@@ -22,6 +22,7 @@
 
    // <<< ADDED: Import favorites store and functions >>>
    import savedPropertyIds, { toggleFavorite } from '$lib/stores/favoritesStore';
+   import { t } from '$lib/i18n/i18n.js'; // Import translation store
 
   // --- Component Props & Data ---
   export let data: PageData; 
@@ -155,10 +156,10 @@
 
 
 <svelte:head>
-    <title>{property.title} | ImmoKraini - Property in Djerba</title>
+    <title>{$t('property.metaTitle', { title: property.title })}</title>
     <meta 
         name="description" 
-        content={`View details for ${property.title}, a ${property.propertyType?.toLowerCase() || 'property'} located at ${property.address}. Contact ImmoKraini for more information.`} 
+        content={$t('property.metaDescription', { address: property.address })} 
     />
     <meta property="og:title" content={`${property.title} | ImmoKraini`} />
     <meta property="og:description" content={`View details for this ${property.propertyType?.toLowerCase() || 'property'} in Djerba.`} />
@@ -300,7 +301,7 @@
           aria-pressed={isThisPropertyFavorite}
         > 
           <Heart class="w-5 h-5" fill={isThisPropertyFavorite ? 'currentColor' : 'none'} />
-          {isThisPropertyFavorite ? 'Saved' : 'Save Property'}
+          {isThisPropertyFavorite ? $t('property.removeFavorite') : $t('property.addFavorite')}
         </button>          <!-- End Save Button -->
 
         
