@@ -48,5 +48,5 @@ The technologies were chosen to create a fast, modern, and scalable application.
 ## 📧 Contact
 
 **Dhiaeddine Kraini**
-* **GitHub:** [DhiaeddineKraini](https://github.com/DhiaeddineKraini)
-* **LinkedIn:** [Dhiaeddine Kraini](linkedin.com/in/dhiaeddine-kraini-565225299 ) 
+* **GitHub:** [github.com/DhiaeddineKraini](https://github.com/DhiaeddineKraini)
+* **LinkedIn:** [linkedin.com/in/dhiaeddine-kraini](https://www.linkedin.com/in/dhiaeddine-kraini-565225299/)
